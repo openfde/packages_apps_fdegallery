@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.fde.gallery3d"
+        applicationId = "com.fde.gallery3d.debug"
         minSdk =
             26
         targetSdk = 36
@@ -62,4 +62,5 @@ dependencies {
     implementation(files("libs/exoplayer-core-2.10.1.aar"))
     implementation(files("libs/exoplayer-ui-2.10.1.aar"))
     implementation(files("libs/exoplayer-r1.5.16.aar"))
+    implementation(files("../imageeditlibrary/libs/PhotoView-2.3.0.aar"))
 }

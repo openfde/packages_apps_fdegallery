@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "TestSpilt"
-include(":app",":imageeditlibrary",":photoview")
+include(":app",":imageeditlibrary")
