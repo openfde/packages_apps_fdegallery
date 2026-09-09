@@ -1,0 +1,38 @@
+<!-- res/values/attrs.xml -->
+<resources>
+    <declare-styleable name="DraggableScrollRecyclerView">
+        <!-- 滑动条宽度 -->
+        <attr name="scrollbarWidth" format="dimension" />
+
+        <!-- 滑动条颜色 -->
+        <attr name="scrollbarColor" format="color" />
+
+        <!-- 轨道颜色 -->
+        <attr name="trackColor" format="color" />
+
+        <!-- 悬停颜色 -->
+        <attr name="hoverColor" format="color" />
+
+        <!-- 滑动条高度比例 -->
+        <attr name="scrollbarHeightRatio" format="float" />
+
+        <!-- 自动隐藏延迟 -->
+        <attr name="autoHideDelay" format="integer" />
+
+        <!-- 是否总是显示 -->
+        <attr name="alwaysShowScrollbar" format="boolean" />
+
+        <!-- 是否启用拖拽 -->
+        <attr name="enableDrag" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="AdvancedMouseScrollView">
+        <attr name="dragMode" format="enum">
+            <enum name="normal" value="0" />
+            <enum name="reverse" value="1" />
+            <enum name="natural" value="2" />
+            <enum name="desktop_style" value="3" />
+        </attr>
+        <attr name="dragSensitivity" format="float" />
+    </declare-styleable>
+</resources>

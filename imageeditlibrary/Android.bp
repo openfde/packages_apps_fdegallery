@@ -1,0 +1,36 @@
+java_import {
+    name: "universalimageloader",
+    jars: ["libs/universal_image_loader.jar"],
+}
+
+
+android_library {
+    name: "imageeditlibrary",
+
+    srcs: [
+        "src/main/java/**/*.java",
+        "src/main/kotlin/**/*.kt",
+    ],
+
+    resource_dirs: [
+        "src/main/res",
+    ],
+
+    manifest: "src/main/AndroidManifest.xml",
+
+    static_libs: [
+        // AndroidX
+        "androidx.appcompat_appcompat",
+        "androidx.fragment_fragment",
+        "androidx.recyclerview_recyclerview",
+        "androidx.annotation_annotation",
+        "androidx.viewpager_viewpager",
+
+        // Material
+        "com.google.android.material_material",
+
+        // 第三方
+        "photoview",
+        "universalimageloader",
+    ],
+}

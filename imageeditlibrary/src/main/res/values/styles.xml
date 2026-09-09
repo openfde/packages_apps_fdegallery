@@ -1,0 +1,24 @@
+<resources>
+    <style name="popwin_anim_style">
+        <item name="android:windowEnterAnimation">@anim/menushow</item>
+        <item name="android:windowExitAnimation">@anim/menuhide</item>
+    </style>
+
+
+    <style name="BottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/bottomSheetStyleWrapper</item>
+    </style>
+
+    <style name="bottomSheetStyleWrapper" parent="Widget.Design.BottomSheet.Modal">
+        <item name="behavior_peekHeight">600dp</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+
+    <style name="RoundedAlertDialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/rounded_dialog_background</item>
+        <item name="colorAccent">#318BF3</item>
+
+    </style>
+
+</resources>

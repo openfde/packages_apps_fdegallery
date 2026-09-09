@@ -1,0 +1,126 @@
+
+java_import {
+    name: "com.google.code.gson_gson",
+    jars: ["app/libs/gson-2.13.1.jar"],
+}
+
+java_import {
+    name: "org.jetbrains.kotlinx_kotlinx-coroutines-core",
+    jars: ["app/libs/kotlinx-coroutines-core-1.7.3.jar"],
+}
+
+java_import {
+    name: "org.jetbrains.kotlinx_kotlinx-coroutines-android",
+    jars: ["app/libs/kotlinx-coroutines-android-1.7.3.jar"],
+}
+
+
+android_library_import {
+    name: "gallery-lib-exoplayer",
+    aars: ["app/libs/exoplayer-r1.5.16.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-exoplayer-v2-core",
+    aars: ["app/libs/exoplayer-core-2.10.1.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-exoplayer-v2-ui",
+    aars: ["app/libs/exoplayer-ui-2.10.1.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "gallery-lib-glide",
+    aars: ["app/libs/glide-5.0.4.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-FFmpegMediaMetadataRetriever",
+    aars: ["app/libs/FFmpegMediaMetadataRetriever-1.0.14.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-text-recognition-chinese",
+    aars: ["app/libs/text-recognition-chinese-16.0.1.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-baselib",
+    aars: ["app/libs/baselib.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-documentfile",
+    aars: ["app/libs/documentfile-1.1.0.aar"],
+    sdk_version: "current",
+}
+
+android_app {
+    name: "FdeGallery",
+    srcs: [
+        "app/src/main/java/**/*.kt",
+        "app/src/main/java/**/*.java",
+        "app/src/main/java/**/*.aidl",
+
+    ],
+    resource_dirs: [
+        "app/src/main/res",
+    ],
+    static_libs: [
+        "androidx.core_core-ktx", 
+        "androidx.lifecycle_lifecycle-runtime-ktx",
+		"androidx.lifecycle_lifecycle-viewmodel-ktx",
+		"kotlinx-coroutines-core",
+		"androidx.lifecycle_lifecycle-viewmodel-compose",
+        "androidx.activity_activity-compose",
+		"androidx.lifecycle_lifecycle-runtime-compose",
+		"kotlinx-coroutines-android",
+        "androidx.compose.ui_ui",
+        "androidx.compose.ui_ui-graphics",
+        "androidx.compose.ui_ui-tooling-preview",
+        "androidx.compose.material3_material3",
+        "androidx.compose.runtime_runtime",
+        "org.jetbrains.kotlinx_kotlinx-coroutines-core",
+        "org.jetbrains.kotlinx_kotlinx-coroutines-android",
+        "com.google.code.gson_gson",
+        "com.google.android.material_material",
+        "androidx.appcompat_appcompat",
+        "androidx-constraintlayout_constraintlayout",
+        "androidx.lifecycle_lifecycle-livedata-ktx",
+        "androidx.lifecycle_lifecycle-viewmodel-ktx",
+        "androidx.navigation_navigation-fragment-ktx",
+        "androidx.navigation_navigation-ui-ktx",
+        "androidx.recyclerview_recyclerview",
+        "gallery-lib-exoplayer",
+        "gallery-lib-exoplayer-v2-core",
+        "gallery-lib-exoplayer-v2-ui",
+        "gallery-lib-glide",
+        "gallery-lib-FFmpegMediaMetadataRetriever",
+        "gallery-lib-text-recognition-chinese",
+        "gallery-lib-baselib",
+        "gallery-lib-documentfile",
+        "imageeditlibrary",
+        "photoview",
+    ],
+    manifest: "app/src/main/AndroidManifest.xml",
+
+    platform_apis: true,
+    system_ext_specific: true,
+    certificate: "platform",
+    privileged: true,
+    required: [
+        "privapp_whitelist_com.android.settings",
+    ],
+    optimize: {
+        enabled: false,
+    },
+}

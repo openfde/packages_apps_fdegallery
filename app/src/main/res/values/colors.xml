@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <color name="ic_launcher_gallery_background">#4285f4</color>
+    <color name="colorPrimary">#999</color>
+    <color name="colorPrimaryDark">#333</color>
+    <color name="colorAccent">#666</color>
+
+    <color name="mainbg">#f8f8f8</color>
+
+    <color name="black_backgroud">#000000</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="card_pressed">#cbcbcb</color>
+    <color name="item_selected">#ffff4444</color>
+    <color name="stock_red">#eb5140</color>
+    <color name="stock_green">#09c872</color>
+    <color name="stock_grey">#999999</color>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <color name="btn_color_normal_grey">#999999</color>
+    <color name="red">#FF0000</color>
+    <color name="orangered">#FF4500</color>
+    <color name="darkorange">#FF8C00</color>
+
+
+    <!-- APP UI color -->
+    <color name="app_pinkish_red">#e83e0b</color>
+    <color name="app_black">#000000</color>
+    <color name="app_white">#ffffff</color>
+    <color name="app_black_light">#333333</color>
+    <color name="app_gray_dark">#666666</color>
+    <color name="app_gray">#999999</color>
+    <color name="app_gray_light">#f2f2f2</color>
+    <color name="app_blue">#335698</color>
+    <color name="app_white_gray">#F8F8F8</color>
+
+    <color name="app_white_transparent">#55ffffff</color>
+    <color name="app_black_transparent">#55000000</color>
+    <color name="app_green">#49BE38</color>
+    <color name="app_blue_light">#008ED2</color>
+
+    <color name="app_black_gray">#32312D</color>
+
+    <color name="app_blue_dark">#0072BC</color>
+    <color name="app_green_light">#8CC63E</color>
+    <color name="app_pink">#E85298</color>
+    <color name="app_gray_white">#B0BDCD</color>
+    <color name="app_gray_white_light">#EFEFEF</color>
+
+
+    <color name="thirty_transparent_black">#4d000000</color>
+
+    <color name="draw_line_color">#f2f2f2</color>
+    <color name="table_line_color">#f2f2f2</color>
+    <color name="inner_line_color">#f2f2f2</color>
+    <color name="outside_line_color">#f2f2f2</color>
+    <color name="main_bg">#f8f8f8</color>
+
+    <color name="dark_text">#333</color>
+    <color name="medium_text">#666</color>
+    <color name="light_text">#999</color>
+    <color name="medium_grep_text">#888</color>
+
+    <color name="bg_circle">#e7e7e7</color>
+    <color name="bg_grep_circle">#bfbfbf</color>
+    <color name="bg_circle_dark">#eb5140</color>
+    <color name="bg_circle_light">#f97551</color>
+    <color name="light_white_text">#ffbcb4</color>
+    <color name="calc_banner_light_text">#ffcabc</color>
+    <color name="red_line_color">#eb5140</color>
+    <color name="radar_line">#f04b36</color>
+    <color name="light_red_text">#f6bab9</color>
+    <color name="light_circle_red_text">#feeaea</color>
+    <color name="find_questions_details_button_color">#e8331c</color>
+    <color name="find_questions_details_img_edge">#e5e5e5</color>
+    <color name="find_questions_reply_list_bg">#efefef</color>
+    <color name="bg_filter_button">#eeeeee</color>
+    <color name="bg_bank_product_introduce_banner">#f88c72</color>
+    <color name="bank_product_introduce_banner_text">#ffdada</color>
+
+    <color name="start_arc_color">#4a8140</color>
+    <color name="middle_arc_color">#cdd745</color>
+    <color name="end_arc_color">#eb6048</color>
+    <color name="scale_color">#7e7e7e</color>
+    <color name="edit_bottom_color">#bfbfbf</color>
+    <color name="feedback_date_text">#afafaf</color>
+
+    <color name="linebg">#f2f2f2</color>
+</resources>

@@ -1,0 +1,52 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace = "com.fde.imageeditlibrary"
+    compileSdkVersion rootProject.ext.sdkVersion
+    lintOptions {
+        abortOnError false
+        checkAllWarnings false
+        checkReleaseBuilds false
+        lintConfig file("path/to/custom/lint.xml")
+    }
+
+    testOptions {
+        unitTests.all {
+            enabled = false
+            ignoreFailures = true
+        }
+    }
+
+//    externalNativeBuild {
+//        cmake {
+//            path "src/main/cpp/CMakeLists.txt"
+//        }
+//    }
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.sdkVersion
+        versionCode 1
+        versionName "1.0"
+
+
+
+        ndk {
+            // 指定需要支持的 ABI 类型
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+    }
+}
+
+dependencies {
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.robolectric:robolectric:3.3.2"
+
+    api 'com.nostra13.universalimageloader:universal-image-loader:1.9.4'
+    api 'androidx.recyclerview:recyclerview:1.0.0'
+    api 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.android.material:material:1.10.0'
+    api project(":photoview")
+
+}

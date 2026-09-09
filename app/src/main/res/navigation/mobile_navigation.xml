@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_picture">
+
+
+    <fragment
+        android:id="@+id/nav_picture"
+        android:name="com.fde.gallery3d.ui.picture.PictureListFragment"
+        android:label="@string/menu_picture"
+        tools:layout="@layout/fragment_picture" />
+
+    <fragment
+        android:id="@+id/nav_video"
+        android:name="com.fde.gallery3d.ui.video.VideoListFragment"
+        android:label="@string/menu_video"
+        tools:layout="@layout/fragment_video" />
+
+    <fragment
+        android:id="@+id/nav_timeline"
+        android:name="com.fde.gallery3d.ui.timeline.TimeLineListFragment"
+        android:label="@string/menu_timeline"
+        tools:layout="@layout/fragment_timeline" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.fde.gallery3d.ui.settings.SettingsFragment"
+        android:label="@string/menu_settings"
+        tools:layout="@layout/fragment_settings" />
+</navigation>

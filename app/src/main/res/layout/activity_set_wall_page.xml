@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.activity.SetWallPageActivity">
+
+    <LinearLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginVertical="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_height="0dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="@dimen/img_width"
+            android:layout_height="@dimen/img_height"
+            android:gravity="center"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/txtPicTitle"
+            android:text="11"
+            android:textSize="12sp"
+            android:padding="4dp"
+            android:textColor="@color/medium_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/layout"
+        app:layout_constraintBottom_toTopOf="@id/relativeLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:textColor="@color/light_text"
+            android:textSize="10sp"
+            android:layout_centerVertical="true"
+            android:paddingLeft="16dp"
+            android:text="@string/show_pic_tips"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/txtOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:paddingVertical="6dp"
+            android:layout_centerVertical="true"
+            android:text="@string/ok"
+            android:textSize="12sp"
+            android:paddingHorizontal="24dp"
+            android:background="@drawable/confirm_bg"
+            android:textColor="@color/confirm_color"
+            />
+
+
+        <TextView
+            android:id="@+id/txtCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:layout_alignRight="@id/txtOk"
+            android:layout_marginRight="96dp"
+            android:text="@string/cancel"
+            android:layout_centerVertical="true"
+            android:textSize="12sp"
+            android:background="@drawable/cancel_bg"
+            android:paddingHorizontal="24dp"
+            android:textColor="@color/cancel_color"
+            />
+
+
+    </RelativeLayout>
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

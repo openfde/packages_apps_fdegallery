@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 鼠标按下 pressed -->
+    <item android:color="#515151" android:state_pressed="true" />
+
+    <!-- 鼠标悬停 hover（API 14+ 支持） -->
+    <item android:color="#bfbfbf" android:state_hovered="true" />
+
+    <!-- 获取焦点（键盘/TV也常用） -->
+    <!-- 默认颜色 -->
+    <item android:color="#707070" />
+
+</selector>

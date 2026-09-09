@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/app_shape_circular_rectangle_gray">
+
+    <TextView
+        android:id="@+id/txtDetails"
+        android:text="@string/details"
+        android:layout_width="match_parent"
+        android:padding="16dp"
+        android:textColor="@color/dark_text"
+        android:layout_height="wrap_content"/>
+
+    <View
+        android:background="@color/linebg"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
+
+    <TextView
+        android:id="@+id/txtSetWallpage"
+        android:text="@string/set_wallpage"
+        android:layout_width="match_parent"
+        android:padding="16dp"
+        android:textColor="@color/dark_text"
+        android:layout_height="wrap_content"/>
+
+    <View
+        android:background="@color/linebg"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="1dp"/>
+
+    <TextView
+        android:id="@+id/txtSetWallpageLock"
+        android:text="@string/set_wallpage_lock"
+        android:layout_width="match_parent"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:textColor="@color/dark_text"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>
