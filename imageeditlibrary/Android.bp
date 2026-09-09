@@ -3,6 +3,12 @@ java_import {
     jars: ["libs/universal_image_loader.jar"],
 }
 
+android_library_import {
+    name: "gallery-lib-photoView",
+    aars: ["libs/PhotoView-2.3.0.aar"],
+    sdk_version: "current",
+}
+
 
 android_library {
     name: "imageeditlibrary",
@@ -30,7 +36,7 @@ android_library {
         "com.google.android.material_material",
 
         // 第三方
-        "photoview",
+        "gallery-lib-photoView",
         "universalimageloader",
     ],
 }

@@ -109,7 +109,7 @@ android_app {
         "gallery-lib-baselib",
         "gallery-lib-documentfile",
         "imageeditlibrary",
-        "photoview",
+        "gallery-lib-photoView",
     ],
     manifest: "app/src/main/AndroidManifest.xml",
 

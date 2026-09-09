@@ -126,7 +126,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="@string/file_provider_authorities_debug"
+            android:authorities="com.fde.gallery3d.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

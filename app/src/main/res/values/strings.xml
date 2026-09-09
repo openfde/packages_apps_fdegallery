@@ -72,8 +72,8 @@
     <string name="toast_cannot_retrieve_cropped_image">Cannot retrieve cropped image</string>
     <string name="toast_unexpected_error">Unexpected error</string>
 
-    <string name="file_provider_authorities">com.fde.gallery.provider</string>
-    <string name="file_provider_authorities_debug">com.fde.gallery2.provider</string>
+    <string name="file_provider_authorities">com.fde.gallery3d.fileprovider</string>
+    <string name="file_provider_authorities_debug">com.fde.gallery3d.debug.fileprovider</string>
     <string name="channel_name">ucrop_chanel</string>
     <string name="channel_description">ucrop result image</string>
     <string name="save_path">save path : %s</string>
