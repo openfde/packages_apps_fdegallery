@@ -36,7 +36,19 @@ android_library_import {
 
 android_library_import {
     name: "gallery-lib-glide",
-    aars: ["app/libs/glide-5.0.4.aar"],
+    aars: ["app/libs/glide-5.0.9.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-gif_decoder",
+    aars: ["app/libs/gif_decoder.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-disklrucache",
+    aars: ["app/libs/disklrucache.aar"],
     sdk_version: "current",
 }
 
@@ -104,6 +116,10 @@ android_app {
         "gallery-lib-exoplayer-v2-core",
         "gallery-lib-exoplayer-v2-ui",
         "gallery-lib-glide",
+        "gallery-lib-gif_decoder",
+        "gallery-lib-disklrucache",
+        "androidx.annotation_annotation",
+        "androidx.exifinterface_exifinterface",
         "gallery-lib-FFmpegMediaMetadataRetriever",
         "gallery-lib-text-recognition-chinese",
         "gallery-lib-baselib",

@@ -29,6 +29,6 @@ public class Constant {
     public static final int ACTION_REQUEST_UPDATE = 200;
 
     public static final String SP_STR = "open_fde";
-    public static final String PKG_PROVIDER = "com.fde.gallery.provider";
+    public static final String PKG_PROVIDER = "com.fde.gallery3d.fileprovider";
 
 }
