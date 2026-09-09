@@ -34,39 +34,12 @@ class SettingsFragment : Fragment() {
             false
         )
 
-        val playerView: PlayerView =
-            root.findViewById<PlayerView>(R.id.player_view)
-
-        initializePlayer(playerView)
 
         return root
     }
 
 
-    private fun initializePlayer(playerView: PlayerView) {
-        player = ExoPlayerFactory.newSimpleInstance(activity)
-        playerView.player = player
 
-        val rawResourceDataSource = RawResourceDataSource(context)
-        val rawResourceUri = RawResourceDataSource.buildRawResourceUri(R.raw.aa)
-        try {
-            rawResourceDataSource.open(
-                DataSpec(rawResourceUri)
-            )
-
-            val dataSource = rawResourceDataSource
-
-            val mediaSource = ExtractorMediaSource.Factory {
-                dataSource
-            }.createMediaSource(rawResourceUri)
-
-            player?.prepare(mediaSource)
-            player?.playWhenReady = true
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     override fun onStart() {
         super.onStart()
@@ -75,7 +48,5 @@ class SettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        player?.release()
-        player = null
     }
 }

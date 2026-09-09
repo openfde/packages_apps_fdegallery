@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         if (navView == null) {
             // The navigation drawer already has the items including the items in the overflow menu
             // We only inflate the overflow menu if the navigation drawer isn't visible
-            menuInflater.inflate(R.menu.overflow, menu)
+            menuInflater.inflate(R.menu.settings, menu)
         }
         return result
     }

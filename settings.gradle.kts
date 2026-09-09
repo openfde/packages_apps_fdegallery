@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TestSpilt"
+rootProject.name = "FdeGallery"
 include(":app",":imageeditlibrary")

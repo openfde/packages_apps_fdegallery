@@ -24,9 +24,9 @@
         android:label="@string/menu_timeline"
         tools:layout="@layout/fragment_timeline" />
 
-    <fragment
-        android:id="@+id/nav_settings"
-        android:name="com.fde.gallery3d.ui.settings.SettingsFragment"
-        android:label="@string/menu_settings"
-        tools:layout="@layout/fragment_settings" />
+<!--    <fragment-->
+<!--        android:id="@+id/nav_settings"-->
+<!--        android:name="com.fde.gallery3d.ui.settings.SettingsFragment"-->
+<!--        android:label="@string/menu_settings"-->
+<!--        tools:layout="@layout/fragment_settings" />-->
 </navigation>
