@@ -152,7 +152,7 @@ public class FileUtils {
                         }
                     }
                 }
-                //            LogTools.i("picture list size " + list.toString());
+                 LogTools.i("picture list size " + list.toString());
                 cursor.close();
             }
         } catch (Exception e) {

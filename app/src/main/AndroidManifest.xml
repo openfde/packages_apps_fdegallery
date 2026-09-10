@@ -82,6 +82,8 @@
             android:name=".ui.VideoPlayActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|density|screenSize|smallestScreenSize"
             android:exported="true"
+            android:documentLaunchMode="always"
+            android:launchMode="standard"
             android:screenOrientation="portrait">
 
             <intent-filter>
@@ -98,6 +100,7 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density"
             android:exported="true"
             android:launchMode="standard"
+            android:documentLaunchMode="always"
             android:screenOrientation="portrait">
 
             <intent-filter>

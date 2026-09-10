@@ -9,8 +9,9 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
-        android:layout_width="256dp"
+        android:layout_width="@dimen/left_width"
         android:background="#f2f2f2"
+        android:visibility="visible"
         android:layout_height="match_parent"
         app:headerLayout="@layout/nav_header_main"
         app:layout_constraintStart_toStartOf="parent"

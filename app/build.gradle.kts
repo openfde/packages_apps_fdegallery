@@ -5,7 +5,7 @@ plugins {
 android {
     namespace = "com.fde.gallery3d"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
@@ -14,7 +14,7 @@ android {
         applicationId = "com.fde.gallery3d.debug"
         minSdk =
             26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 

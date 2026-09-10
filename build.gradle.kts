@@ -4,5 +4,5 @@ plugins {
 }
 
 
-extra["sdkVersion"] = 36
-extra["minSdkVersion"] = 24
+extra["sdkVersion"] = 37
+extra["minSdkVersion"] = 26
