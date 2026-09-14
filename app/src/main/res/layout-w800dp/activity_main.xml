@@ -52,7 +52,16 @@
                 android:layout_height="match_parent"
                 android:layout_marginStart="@dimen/left_width"
                 android:background="@color/app_white"
-                app:titleTextAppearance="@style/SideNavTitle" />
+                app:titleTextAppearance="@style/SideNavTitle" >
+
+
+                <LinearLayout
+                    android:id="@+id/toolbar_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"></LinearLayout>
+
+            </com.google.android.material.appbar.MaterialToolbar>
 
             <!-- 左侧栏与右侧标题栏之间的竖直分隔线 -->
             <View
@@ -65,7 +74,7 @@
             <!-- 标题栏底部分隔线 -->
             <View
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="0dp"
                 android:layout_gravity="bottom"
                 android:background="@color/side_divider" />
 
