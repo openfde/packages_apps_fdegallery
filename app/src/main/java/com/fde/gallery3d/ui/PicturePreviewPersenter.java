@@ -30,6 +30,7 @@ import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseActivity;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
+import com.fde.gallery3d.ui.trash.TrashManager;
 import com.fde.gallery3d.ui.utils.FileUtils;
 import com.fde.gallery3d.ui.utils.LogTools;
 import com.fde.gallery3d.ui.utils.SPUtils;
@@ -139,12 +140,14 @@ public class PicturePreviewPersenter {
     public void deleteImage(Context context) {
         try {
             Multimedia pic = list.get(curPos);
-            // 你的删除或修改文件的代码
-            FileUtils.deleteImage(context, pic.getPath());
+            // 移入回收站，代替直接删除
+            boolean moved = TrashManager.moveToTrash(context, pic);
+            Toast.makeText(context,
+                    context.getString(moved ? R.string.moved_to_trash_count
+                            : R.string.move_to_trash_failed, moved ? 1 : 0),
+                    Toast.LENGTH_SHORT).show();
             baseActivity.setResult(Constant.REQUEST_DELETE_PHOTO);
             baseActivity.finish();
-        } catch (RecoverableSecurityException e) {
-            baseActivity.requestConfirmDialog(e);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,7 +156,7 @@ public class PicturePreviewPersenter {
     public void showDelDlg() {
         try {
             AlertDialog.Builder builder = new AlertDialog.Builder(context, com.fde.imageeditlibrary.R.style.RoundedAlertDialog);
-            builder.setTitle(R.string.is_delete);
+            builder.setTitle(R.string.is_move_to_trash);
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {

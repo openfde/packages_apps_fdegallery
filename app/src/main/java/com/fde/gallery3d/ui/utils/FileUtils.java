@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import com.fde.gallery3d.ui.common.Constant;
 import com.fde.imageeditlibrary.editimage.utils.BitmapUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -516,6 +518,147 @@ public class FileUtils {
         }
 
         return null;
+    }
+
+    // ==================== 回收站相关工具 ====================
+
+    /**
+     * 回收站目录（隐藏目录，避免被媒体扫描到）。
+     * 优先使用公共目录 Pictures/fde/.trash，不可写时退化到应用私有目录。
+     */
+    public static File getTrashDir(Context context) {
+        File publicDir = null;
+        try {
+            File base = createFolders();
+            if (base != null) {
+                publicDir = new File(base, ".trash");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (ensureWritableDir(publicDir)) {
+            return publicDir;
+        }
+
+        File appDir = null;
+        if (context != null) {
+            File ext = context.getExternalFilesDir(null);
+            appDir = new File(ext != null ? ext : context.getFilesDir(), ".trash");
+        }
+        if (ensureWritableDir(appDir)) {
+            return appDir;
+        }
+        LogTools.e("getTrashDir: no writable trash directory");
+        return null;
+    }
+
+    private static boolean ensureWritableDir(File dir) {
+        if (dir == null) {
+            return false;
+        }
+        try {
+            if (!dir.exists() && !dir.mkdirs()) {
+                return false;
+            }
+            return dir.isDirectory() && dir.canWrite();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * 移动文件，rename 失败时退化为拷贝 + 删除
+     */
+    public static boolean moveFile(File src, File dst) {
+        if (src == null || dst == null || !src.exists()) {
+            LogTools.e("moveFile: src not exists " + (src == null ? "null" : src.getAbsolutePath()));
+            return false;
+        }
+        try {
+            File parent = dst.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (src.renameTo(dst)) {
+            return true;
+        }
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+            out = new FileOutputStream(dst);
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = in.read(buffer)) > 0) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        } catch (Exception e) {
+            LogTools.e("moveFile copy failed: " + e);
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (in != null) in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (out != null) out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return src.delete();
+    }
+
+    /**
+     * 通知媒体库刷新某个文件
+     */
+    public static void scanFile(Context context, String path) {
+        try {
+            MediaScannerConnection.scanFile(context, new String[]{path}, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 查询媒体库中某个文件的 _ID，找不到返回 -1
+     */
+    public static long queryMediaStoreId(Context context, int mediaType, String path) {
+        Uri uri = mediaType == Constant.MEDIA_VIDEO
+                ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String selection = MediaStore.MediaColumns.DATA + "=?";
+        String[] selectionArgs = {path};
+        try (Cursor cursor = context.getContentResolver().query(uri,
+                new String[]{MediaStore.MediaColumns._ID}, selection, selectionArgs, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * 删除媒体库记录（不删除文件本身）
+     */
+    public static void deleteMediaStoreEntry(Context context, int mediaType, String path) {
+        long id = queryMediaStoreId(context, mediaType, path);
+        if (id < 0) {
+            return;
+        }
+        Uri baseUri = mediaType == Constant.MEDIA_VIDEO
+                ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        context.getContentResolver().delete(ContentUris.withAppendedId(baseUri, id), null, null);
     }
 
 }

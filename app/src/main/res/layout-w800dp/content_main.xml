@@ -7,27 +7,127 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_main">
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
+    <!-- ==================== 左侧导航栏 ==================== -->
+    <LinearLayout
+        android:id="@+id/left_layout"
         android:layout_width="@dimen/left_width"
-        android:background="#f2f2f2"
-        android:visibility="visible"
         android:layout_height="match_parent"
-        app:headerLayout="@layout/nav_header_main"
+        android:background="@color/side_bg"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/navigation_drawer" />
+        app:layout_constraintTop_toTopOf="parent">
 
+        <!-- 搜索框 -->
+        <LinearLayout
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/side_search_height"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_side_search"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginStart="12dp"
+                android:contentDescription="@string/menu_search"
+                android:src="@drawable/ic_side_search"
+                app:tint="@color/side_search_hint" />
 
+            <EditText
+                android:id="@+id/search_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/search_hint"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingStart="9dp"
+                android:paddingEnd="4dp"
+                android:singleLine="true"
+                android:textColor="@color/side_text"
+                android:textColorHint="@color/side_search_hint"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/search_clear"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/search_clear"
+                android:padding="7dp"
+                android:src="@drawable/ic_search_clear"
+                android:visibility="gone"
+                app:tint="@color/side_search_hint" />
+
+        </LinearLayout>
+
+        <!-- 导航菜单 -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:visibility="visible"
+            app:itemBackground="@drawable/bg_nav_item"
+            app:itemHorizontalPadding="14dp"
+            app:itemIconPadding="14dp"
+            app:itemIconSize="@dimen/side_item_icon_size"
+            app:itemIconTint="@color/nav_item_icon"
+            app:itemTextAppearance="@style/SideNavText"
+            app:itemTextColor="@color/nav_item_text"
+            app:menu="@menu/navigation_drawer" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="@color/side_divider" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="12dp"
+            android:text="@string/about_app"
+            android:textColor="@color/side_search_hint"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/left_divider"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="@color/side_divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/left_layout"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ==================== 右侧内容（Fragment） ==================== -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment_content_main"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/app_white"
         app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/nav_view"
+        app:layout_constraintStart_toEndOf="@id/left_divider"
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 </androidx.constraintlayout.widget.ConstraintLayout>

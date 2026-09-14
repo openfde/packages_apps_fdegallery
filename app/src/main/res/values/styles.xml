@@ -55,4 +55,16 @@
         <item name="android:textColor">@color/operation_color</item>
     </style>
 
+    <!-- 左侧导航栏菜单文字 -->
+    <style name="SideNavText" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- 顶部标题栏文字 -->
+    <style name="SideNavTitle">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/dark_text</item>
+    </style>
+
 </resources>

@@ -50,9 +50,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -70,6 +72,7 @@ import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseActivity;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
+import com.fde.gallery3d.ui.favorite.FavoriteStore;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.utils.FileUtils;
 import com.fde.gallery3d.ui.utils.LogTools;
@@ -113,6 +116,7 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
 
     ImageView txtDelete;
     ImageView txtShare;
+    ImageView txtFavorite;
 
     PicturePreviewPersenter picturePreviewPersenter;
 
@@ -281,6 +285,7 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
         imgRight = (ImageView) findViewById(R.id.imgRight);
         txtDelete = (ImageView) findViewById(R.id.txtDelete);
         txtShare = (ImageView) findViewById(R.id.txtShare);
+        txtFavorite = (ImageView) findViewById(R.id.txtFavorite);
         txtDetails = (ImageView) findViewById(R.id.txtDetails);
         txtSetWallpage = (ImageView) findViewById(R.id.txtSetWallpage);
         txtEdit = (ImageView) findViewById(R.id.txtEdit);
@@ -294,6 +299,9 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
         txtSetWallpage.setOnClickListener(this);
         txtDelete.setOnClickListener(this);
         txtShare.setOnClickListener(this);
+        if (txtFavorite != null) {
+            txtFavorite.setOnClickListener(this);
+        }
         txtEdit.setOnClickListener(this);
         txtOcr.setOnClickListener(this);
         txtRotate.setOnClickListener(this);
@@ -365,7 +373,12 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
     }
 
     public void showPic(Multimedia multimedia) {
-        if (multimedia != null && !"".equals(multimedia.getPath())) {
+        if (multimedia == null) {
+            return;
+        }
+        picture = multimedia;
+        updateFavoriteIcon();
+        if (!"".equals(multimedia.getPath())) {
             try {
                 LogTools.d("multimedia getPath "+multimedia.getPath());
                 RequestOptions options = new RequestOptions()
@@ -400,6 +413,21 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
     }
 
 
+    private void updateFavoriteIcon() {
+        if (txtFavorite == null) {
+            return;
+        }
+        boolean favorite = picture != null && FavoriteStore.isFavorite(context, picture.getPath());
+        txtFavorite.setImageResource(
+                favorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        if (favorite) {
+            txtFavorite.setColorFilter(ContextCompat.getColor(context, R.color.badge_gold));
+        } else {
+            txtFavorite.clearColorFilter();
+        }
+    }
+
+
     @Override
     public void onClick(View view) {
         editOcrText.setVisibility(View.GONE);
@@ -407,7 +435,19 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
 
         int id = view.getId();
 
-        if (id == R.id.txtDelete) {
+        if (id == R.id.txtFavorite) {
+
+            if (picture != null) {
+                boolean favorite = FavoriteStore.toggle(context, picture);
+                updateFavoriteIcon();
+                Toast.makeText(
+                        context,
+                        favorite ? R.string.favorite_added : R.string.favorite_removed,
+                        Toast.LENGTH_SHORT).show();
+            }
+            return;
+
+        } else if (id == R.id.txtDelete) {
 
             picturePreviewPersenter.showDelDlg();
 
@@ -417,7 +457,7 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
             imageUris.add(
                     FileProvider.getUriForFile(
                             context,
-                            Constant.PKG_PROVIDER,
+                            Constant.getProviderAuthority(context),
                             new File(picture.getPath())
                     )
             );

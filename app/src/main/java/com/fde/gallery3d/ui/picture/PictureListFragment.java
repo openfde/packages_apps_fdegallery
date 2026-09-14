@@ -96,6 +96,16 @@ public class PictureListFragment extends BaseFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // 从左侧导航切换回图片页时也要刷新数据
+        if (pictureListPersenter != null) {
+            context = getActivity();
+            pictureListPersenter.getAllImages(context);
+        }
+    }
+
+    @Override
     protected void onFragmentVisibleChange(boolean isVisible) {
         super.onFragmentVisibleChange(isVisible);
         if (isVisible) {

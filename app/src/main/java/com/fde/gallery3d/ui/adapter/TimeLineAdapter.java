@@ -1,4 +1,4 @@
-package com.fde.gallery3d.ui3d.ui.adapter;
+package com.fde.gallery3d.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

@@ -22,16 +22,17 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fde.gallery3d.R;
+import com.fde.gallery3d.ui.adapter.TimeLineAdapter;
 import com.fde.gallery3d.ui.base.BaseActivity;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.event.ViewEvent;
+import com.fde.gallery3d.ui.trash.TrashManager;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.utils.FileUtils;
 import com.fde.gallery3d.ui.utils.SPUtils;
 import com.fde.gallery3d.ui.view.CustomScrollBarView;
 import com.fde.gallery3d.ui.view.RecyclerScrollBinder;
-import com.fde.gallery3d.ui3d.ui.adapter.TimeLineAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
     Context context;
     RecyclerView recyclerView;
     GridLayoutManager gridLayoutManager;
-    com.fde.gallery3d.ui3d.ui.adapter.TimeLineAdapter timeLineAdapter;
+    TimeLineAdapter timeLineAdapter;
     List<Multimedia> list;
     List<Multimedia> delList;
 
@@ -64,7 +65,6 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
             list = (ArrayList<Multimedia>) bundle.getSerializable("picList");
         }
         initView();
-
 
     }
 
@@ -200,7 +200,7 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
                         imageUris.add(
                                 FileProvider.getUriForFile(
                                         context,
-                                        Constant.PKG_PROVIDER,
+                                        Constant.getProviderAuthority(context),
                                         new File(list.get(i).getPath())
                                 )
                         );
@@ -354,18 +354,17 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
 
     @SuppressLint("NewApi")
     public void deleteImage() {
-        if (delList != null) {
-            try {
-                // 你的删除或修改文件的代码
-                for (Multimedia picture : delList) {
-                    FileUtils.deleteImage(context, picture.getPath());
-                }
-                timeLineAdapter.notifyDataSetChanged();
-                isShowBottomBtn = !isShowBottomBtn;
-                showOrHideBottomBtn(isShowBottomBtn);
-            } catch (RecoverableSecurityException e) {
-                requestConfirmDialog(e);
+        if (delList != null && !delList.isEmpty()) {
+            // 移入回收站，代替直接删除
+            int count = TrashManager.moveToTrash(context, delList);
+            if (count > 0) {
+                showShortToast(getString(R.string.moved_to_trash_count, count));
+            } else {
+                showShortToast(getString(R.string.move_to_trash_failed));
             }
+            timeLineAdapter.notifyDataSetChanged();
+            isShowBottomBtn = !isShowBottomBtn;
+            showOrHideBottomBtn(isShowBottomBtn);
         }
     }
 

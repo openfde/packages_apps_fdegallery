@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.fde.gallery3d.R
+import com.fde.gallery3d.ui.utils.DeviceUtils
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ExtractorMediaSource
@@ -34,6 +36,11 @@ class SettingsFragment : Fragment() {
             false
         )
 
+        val version = root.findViewById<TextView>(R.id.txtVersion)
+        version?.text = getString(
+            R.string.about_version,
+            DeviceUtils.getAppVersionName(requireContext())
+        )
 
         return root
     }

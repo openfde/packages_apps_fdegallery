@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="3dp">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="@dimen/item_height"
+        android:background="@color/media_placeholder"
+        android:contentDescription="@string/menu_picture"
+        android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/imgType"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/menu_video"
+        android:src="@drawable/ic_play_overlay"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/imgFavorite"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="6dp"
+        android:contentDescription="@string/favorite"
+        android:src="@drawable/ic_favorite"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/scrim_black_60"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="3dp"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        android:visibility="gone" />
+
+</FrameLayout>

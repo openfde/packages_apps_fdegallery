@@ -129,7 +129,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.fde.gallery3d.fileprovider"
+            android:authorities="com.fde.gallery3d.debug.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

@@ -41,6 +41,8 @@ import com.fde.gallery3d.ui.base.BaseFragment;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.event.ViewEvent;
+import com.fde.gallery3d.ui.favorite.FavoriteStore;
+import com.fde.gallery3d.ui.trash.TrashManager;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.utils.FileUtils;
 import com.fde.gallery3d.ui.utils.LogTools;
@@ -61,6 +63,7 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
     TextView txtDelete;
     TextView txtAllSelected;
     TextView txtCancel;
+    TextView txtCollect;
     List<Multimedia> list;
     List<Multimedia> delList;
     int numberOfColumns = 3;
@@ -85,11 +88,13 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
         txtDelete = (TextView) view.findViewById(R.id.txtDelete);
         txtAllSelected = (TextView) view.findViewById(R.id.txtAllSelected);
         txtCancel = (TextView) view.findViewById(R.id.txtCancel);
+        txtCollect = (TextView) view.findViewById(R.id.txtCollect);
         CustomScrollBarView bar = (CustomScrollBarView) view.findViewById(R.id.scrollBar);
         txtShare.setOnClickListener(this);
         txtDelete.setOnClickListener(this);
         txtAllSelected.setOnClickListener(this);
         txtCancel.setOnClickListener(this);
+        txtCollect.setOnClickListener(this);
         gridLayoutManager = new GridLayoutManager(context, 3);
         recyclerView.setLayoutManager(gridLayoutManager);
         listenWindowResize();
@@ -244,7 +249,7 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
                         imageUris.add(
                                 FileProvider.getUriForFile(
                                         context,
-                                        Constant.PKG_PROVIDER,
+                                        Constant.getProviderAuthority(context),
                                         new File(list.get(i).getPath())
                                 )
                         );
@@ -309,7 +314,7 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
                             context,
                             com.fde.imageeditlibrary.R.style.RoundedAlertDialog);
 
-            builder.setTitle(R.string.is_delete);
+            builder.setTitle(R.string.is_move_to_trash);
 
             builder.setPositiveButton(
                     R.string.ok,
@@ -327,6 +332,25 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
             builder.setNegativeButton(R.string.cancel, null);
             builder.show();
+
+        } else if (id == R.id.txtCollect) {
+
+            int count = 0;
+            for (int i = 0; i < list.size(); i++) {
+                Multimedia video = list.get(i);
+                if (video.isSelected() && FavoriteStore.add(context, video)) {
+                    count++;
+                }
+            }
+
+            if (count < 1) {
+                baseFragment.showShortToast(
+                        context.getString(R.string.can_not_choose_empty));
+                return;
+            }
+
+            baseFragment.showShortToast(
+                    context.getString(R.string.favorite_added_count, count));
 
         } else if (id == R.id.txtAllSelected) {
 
@@ -373,18 +397,19 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     @SuppressLint("NewApi")
     public void deleteVideo() {
-        if (delList != null) {
-            try {
-                // 你的删除或修改文件的代码
-                for (Multimedia video : delList) {
-                    FileUtils.deleteVideo(context, video.getPath());
-                }
-                videoListAdapter.notifyDataSetChanged();
-                isShowBottomBtn = !isShowBottomBtn;
-                showOrHideBottomBtn(isShowBottomBtn);
-            } catch (RecoverableSecurityException e) {
-                baseFragment.requestConfirmDialog(e);
+        if (delList != null && !delList.isEmpty()) {
+            // 移入回收站，代替直接删除
+            int count = TrashManager.moveToTrash(context, delList);
+            if (count > 0) {
+                baseFragment.showShortToast(
+                        context.getString(R.string.moved_to_trash_count, count));
+            } else {
+                baseFragment.showShortToast(
+                        context.getString(R.string.move_to_trash_failed));
             }
+            videoListAdapter.notifyDataSetChanged();
+            isShowBottomBtn = !isShowBottomBtn;
+            showOrHideBottomBtn(isShowBottomBtn);
         }
     }
 }

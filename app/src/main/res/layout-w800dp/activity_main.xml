@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,44 +9,74 @@
         android:id="@+id/caption_bar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:background="@color/app_white"
         android:gravity="center_vertical"
-        android:background="#ccc"
         android:orientation="horizontal">
 
         <FrameLayout
-            android:layout_height="match_parent"
-            android:layout_width="match_parent">
-
-        <LinearLayout
-            android:layout_width="@dimen/left_width"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:visibility="visible"
-            android:background="#f2f2f2"
-            android:orientation="horizontal"/>
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/materialToolbar"
             android:layout_width="match_parent"
-            android:layout_marginLeft="36dp"
+            android:layout_height="match_parent">
 
-            android:layout_height="match_parent"
-            />
+            <!-- 左上角品牌区，宽度与左侧导航栏一致 -->
+            <LinearLayout
+                android:layout_width="@dimen/left_width"
+                android:layout_height="match_parent"
+                android:background="@color/side_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
 
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@mipmap/ic_launcher_gallery" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="9dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/app_name"
+                    android:textColor="@color/dark_text"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/materialToolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/left_width"
+                android:background="@color/app_white"
+                app:titleTextAppearance="@style/SideNavTitle" />
+
+            <!-- 左侧栏与右侧标题栏之间的竖直分隔线 -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:layout_marginStart="@dimen/left_width"
+                android:background="@color/side_divider" />
+
+            <!-- 标题栏底部分隔线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="@color/side_divider" />
 
         </FrameLayout>
 
-
     </LinearLayout>
-
-
-
-
 
     <include
         android:id="@+id/app_bar_main"
         layout="@layout/app_bar_main"
-        android:layout_marginTop="48dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="48dp" />
 </FrameLayout>

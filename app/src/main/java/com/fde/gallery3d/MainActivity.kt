@@ -3,18 +3,26 @@ package com.fde.gallery3d
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsetsController
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -23,12 +31,17 @@ import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.fde.gallery3d.ui.search.SearchState
+import com.fde.gallery3d.ui.utils.LogTools
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
@@ -40,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     private var root: View? = null
     private var captionBar: View? = null
     private var materialToolbar: MaterialToolbar? = null
+
+    private val searchHandler = Handler(Looper.getMainLooper())
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,17 +70,10 @@ class MainActivity : AppCompatActivity() {
         toolbar.visibility = View.GONE
 
         materialToolbar?.setTitle(R.string.app_name)
-        materialToolbar?.setTitleTextAppearance(this, R.style.app_title)
         setTitle(R.string.app_name)
 
-
-//        if (!Environment.isExternalStorageManager()) {
-//            val intent = Intent(
-//                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
-//            )
-//            intent.setData(Uri.parse("package:" + getPackageName()))
-//            startActivity(intent)
-//        }
+        val colorStateList = ColorStateList.valueOf(R.color.app_black).withAlpha(255)
+        materialToolbar?.setTitleTextColor(colorStateList)
 
         triggerSystemMediaScan();
 
@@ -87,6 +95,9 @@ class MainActivity : AppCompatActivity() {
                     R.id.nav_picture,
                     R.id.nav_video,
                     R.id.nav_timeline,
+                    R.id.nav_collection,
+                    R.id.nav_trash,
+                    R.id.nav_search,
                     R.id.nav_settings
                 ),
                 drawerLayout
@@ -112,7 +123,83 @@ class MainActivity : AppCompatActivity() {
             bottomNavView.setupWithNavController(navController)
         }
 
+        setupSideSearch(navController)
+        setupToolbarTitle(navController)
+    }
 
+    /**
+     * 左侧搜索框：输入关键字后在右侧的搜索页面展示结果
+     */
+    private fun setupSideSearch(navController: NavController) {
+        val editText = findViewById<EditText>(R.id.search_edit_text) ?: return
+        val clear = findViewById<ImageView>(R.id.search_clear)
+
+        clear?.setOnClickListener {
+            editText.setText("")
+            SearchState.getInstance().query = ""
+            searchHandler.removeCallbacksAndMessages(null)
+            if (navController.currentDestination?.id != R.id.nav_picture) {
+                navController.popBackStack(R.id.nav_picture, false)
+            }
+        }
+
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim().orEmpty()
+                clear?.visibility = if (query.isEmpty()) View.GONE else View.VISIBLE
+                searchHandler.removeCallbacksAndMessages(null)
+
+                if (query.isEmpty()) {
+                    SearchState.getInstance().setQuery("")
+                    searchHandler.removeCallbacksAndMessages(null)
+                    if (navController.currentDestination?.id == R.id.nav_search) {
+                        navController.popBackStack(R.id.nav_picture, false)
+                    }
+                    return
+                }
+
+                searchHandler.postDelayed({
+                    SearchState.getInstance().setQuery(query)
+                    if (navController.currentDestination?.id != R.id.nav_search) {
+                        // 搜索页只保留一份，返回时直接回到图库首页
+                        navController.navigate(
+                            R.id.nav_search,
+                            null,
+                            NavOptions.Builder()
+                                .setPopUpTo(R.id.nav_picture, false)
+                                .build()
+                        )
+                    }
+                }, SEARCH_DELAY)
+            }
+        })
+    }
+
+    /**
+     * 顶部标题栏跟随右侧页面切换
+     */
+    private fun setupToolbarTitle(navController: NavController) {
+        val toolbar = materialToolbar ?: return
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            toolbar.title = titleOf(destination)
+        }
+        navController.currentDestination?.let { toolbar.title = titleOf(it) }
+    }
+
+    private fun titleOf(destination: NavDestination): CharSequence {
+        if (destination.id == R.id.nav_search) {
+            val query = SearchState.getInstance().query
+            if (!query.isNullOrEmpty()) {
+                return getString(R.string.search_result_title, query)
+            }
+        }
+        return destination.label ?: getString(R.string.app_name)
     }
 
     fun triggerSystemMediaScan() {
@@ -130,13 +217,6 @@ class MainActivity : AppCompatActivity() {
             WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
             WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
         )
-//        captionBar?.setBackgroundColor(
-//            ContextCompat.getColor(this, R.color.bg_circle_dark)
-//        )
-
-//        captionBar?.setTextColor(
-//            ContextCompat.getColor(this, R.color.bg_circle_dark)
-//        )
     }
 
     private fun setupCaptionBarInsets() {
@@ -160,7 +240,7 @@ class MainActivity : AppCompatActivity() {
 
                 decorView.systemGestureExclusionRects = listOf(
                     Rect(
-                        decorView.width -200 ,
+                        decorView.width - 200,
                         0,
                         decorView.width,
                         height
@@ -186,6 +266,8 @@ class MainActivity : AppCompatActivity() {
             // We only inflate the overflow menu if the navigation drawer isn't visible
             menuInflater.inflate(R.menu.settings, menu)
         }
+
+
         return result
     }
 
@@ -202,5 +284,9 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    companion object {
+        private const val SEARCH_DELAY = 250L
     }
 }

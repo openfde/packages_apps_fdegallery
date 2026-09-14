@@ -119,6 +119,15 @@
             android:layout_height="match_parent"/>
 
         <ImageView
+            android:id="@+id/txtFavorite"
+            android:src="@drawable/ic_favorite_border"
+            android:tooltipText="@string/favorite"
+            style="@style/list_bottom_icon"
+            android:focusable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"/>
+
+        <ImageView
             android:id="@+id/txtShare"
             android:src="@drawable/ic_share"
             android:tooltipText="@string/share"

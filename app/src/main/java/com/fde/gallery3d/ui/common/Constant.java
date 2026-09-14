@@ -15,6 +15,8 @@
  */
 package com.fde.gallery3d.ui.common;
 
+import android.content.Context;
+
 public class Constant {
     public static final int MEDIA_PIC = 1;
     public static final int MEDIA_VIDEO = 2;
@@ -29,6 +31,15 @@ public class Constant {
     public static final int ACTION_REQUEST_UPDATE = 200;
 
     public static final String SP_STR = "open_fde";
+    public static final String SP_MEDIA = "gallery_media_store";
     public static final String PKG_PROVIDER = "com.fde.gallery3d.fileprovider";
+
+    /**
+     * FileProvider 的 authority 必须与 AndroidManifest 中声明的一致，
+     * debug 包名带 .debug 后缀，所以这里动态拼接，避免分享时崩溃。
+     */
+    public static String getProviderAuthority(Context context) {
+        return context.getPackageName() + ".fileprovider";
+    }
 
 }

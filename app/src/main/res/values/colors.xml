@@ -92,4 +92,19 @@
     <color name="feedback_date_text">#afafaf</color>
 
     <color name="linebg">#f2f2f2</color>
+
+    <!-- Left side navigation -->
+    <color name="side_bg">#F5F6F8</color>
+    <color name="side_divider">#E4E6EB</color>
+    <color name="side_item_selected_bg">#E3EBFB</color>
+    <color name="side_item_pressed_bg">#EAECF0</color>
+    <color name="side_accent">#2F6FE0</color>
+    <color name="side_text">#333333</color>
+    <color name="side_search_hint">#9AA0A6</color>
+    <color name="side_search_stroke">#E2E5EA</color>
+
+    <!-- Media grid -->
+    <color name="media_placeholder">#EFEFEF</color>
+    <color name="scrim_black_60">#99000000</color>
+    <color name="badge_gold">#F5A623</color>
 </resources>

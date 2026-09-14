@@ -65,6 +65,16 @@ public class TimeLineListFragment extends BaseFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // 从左侧导航切换回时间轴页时也要刷新数据
+        if (timeLinePersenter != null) {
+            context = getActivity();
+            timeLinePersenter.getAllMedia(context);
+        }
+    }
+
+    @Override
     protected void onFragmentVisibleChange(boolean isVisible) {
         super.onFragmentVisibleChange(isVisible);
         if (isVisible) {
