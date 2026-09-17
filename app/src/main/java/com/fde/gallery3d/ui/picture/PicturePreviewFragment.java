@@ -320,6 +320,7 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         }
         Intent intent = new Intent(requireContext(), EditImageActivity.class);
         intent.putExtra(EditImageActivity.FILE_PATH, editImagePath);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(EditImageActivity.EXTRA_OUTPUT, outputPath);
         startActivityForResult(intent, requestCode);
     }
