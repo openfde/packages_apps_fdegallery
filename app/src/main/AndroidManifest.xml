@@ -100,7 +100,6 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density"
             android:exported="true"
             android:launchMode="standard"
-            android:documentLaunchMode="always"
             android:screenOrientation="portrait">
 
             <intent-filter>

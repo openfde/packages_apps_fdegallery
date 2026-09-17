@@ -27,9 +27,9 @@ import android.graphics.BitmapFactory;
 import android.widget.Toast;
 
 import com.fde.gallery3d.R;
-import com.fde.gallery3d.ui.base.BaseActivity;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
+import com.fde.gallery3d.ui.picture.PicturePreviewFragment;
 import com.fde.gallery3d.ui.trash.TrashManager;
 import com.fde.gallery3d.ui.utils.FileUtils;
 import com.fde.gallery3d.ui.utils.LogTools;
@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class PicturePreviewPersenter {
-    BaseActivity baseActivity;
+    PicturePreviewFragment fragment;
     Multimedia picture;
     Context context;
 
@@ -51,9 +51,9 @@ public class PicturePreviewPersenter {
     int curPos = -1;
 
 
-    public PicturePreviewPersenter(BaseActivity baseActivity, Multimedia picture) {
-        this.baseActivity = baseActivity;
-        context = baseActivity;
+    public PicturePreviewPersenter(PicturePreviewFragment fragment, Multimedia picture) {
+        this.fragment = fragment;
+        context = fragment.getActivity();
         this.picture = picture;
         getPicList();
     }
@@ -62,6 +62,9 @@ public class PicturePreviewPersenter {
         try {
             list = FileUtils.getAllImages(context);
             curPos = -1;
+            if (picture == null) {
+                return;
+            }
             for (int i = 0; i < list.size(); i++) {
                 Multimedia pic = list.get(i);
                 if (pic.getId() == picture.getId()) {
@@ -146,8 +149,7 @@ public class PicturePreviewPersenter {
                     context.getString(moved ? R.string.moved_to_trash_count
                             : R.string.move_to_trash_failed, moved ? 1 : 0),
                     Toast.LENGTH_SHORT).show();
-            baseActivity.setResult(Constant.REQUEST_DELETE_PHOTO);
-            baseActivity.finish();
+            fragment.closePreview(Constant.REQUEST_DELETE_PHOTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -174,7 +176,11 @@ public class PicturePreviewPersenter {
    public void editImageClick() {
         Multimedia pic = list.get(curPos);
         File outputFile = FileUtils.genEditFile();
-        EditImageActivity.start(baseActivity,pic.getPath(),outputFile.getAbsolutePath(),Constant.ACTION_REQUEST_EDITIMAGE);
+        if (pic == null || outputFile == null) {
+            return;
+        }
+        fragment.startEditImage(pic.getPath(), outputFile.getAbsolutePath(),
+                Constant.ACTION_REQUEST_EDITIMAGE);
     }
 
 
@@ -205,7 +211,7 @@ public class PicturePreviewPersenter {
                 wallpaperManager.setBitmap(wallpaperBitmap);
                 wallpaperManager.setBitmap(wallpaperBitmap, null, true, WallpaperManager.FLAG_LOCK);
             }
-            baseActivity.runOnUiThread(new Runnable() {
+            fragment.runOnUi(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(context, R.string.set_wallpage_success, Toast.LENGTH_SHORT).show();

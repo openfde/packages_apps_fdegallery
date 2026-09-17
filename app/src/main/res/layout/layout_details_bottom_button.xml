@@ -24,116 +24,139 @@
     android:orientation="horizontal">
 
 
-        <LinearLayout
+        <ImageView
+            android:id="@+id/imgBack"
             android:layout_width="wrap_content"
-            android:paddingLeft="16dp"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            style="@style/back_bottom_icon"
+            android:visibility="visible"
+            android:src="@drawable/ic_back" />
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
             android:orientation="horizontal">
 
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:paddingLeft="16dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+
+                        <ImageView
+                            android:id="@+id/imgZoomOut"
+                            android:src="@drawable/ic_reduce"
+                            style="@style/list_bottom_button"
+                            android:layout_width="wrap_content"
+                            android:focusable="false"
+                            android:layout_height="match_parent"/>
+
+                        <TextView
+                            android:id="@+id/txtScale"
+                            android:text="100%"
+                            android:textSize="12sp"
+                            android:textColor="#707070"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:focusable="false"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                        <ImageView
+                            android:id="@+id/imgZoomIn"
+                            android:src="@drawable/ic_plus"
+                            android:focusable="false"
+                            style="@style/list_bottom_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+
+
+                </LinearLayout>
+
+
                 <ImageView
-                    android:id="@+id/imgZoomOut"
-                    android:src="@drawable/ic_reduce"
-                    style="@style/list_bottom_button"
+                    android:id="@+id/txtEdit"
+                    android:src="@drawable/ic_edit"
+                    android:tooltipText="@string/edit"
+                    style="@style/list_bottom_icon"
                     android:layout_width="wrap_content"
                     android:focusable="false"
                     android:layout_height="match_parent"/>
 
-                <TextView
-                    android:id="@+id/txtScale"
-                    android:text="100%"
-                    android:textSize="12sp"
-                    android:textColor="#707070"
-                    android:gravity="center"
-                    android:visibility="visible"
+                <ImageView
+                    android:id="@+id/txtRotate"
+                    android:tooltipText="@string/rotate"
+                    android:src="@drawable/ic_right_rotate"
+                    style="@style/list_bottom_icon"
+                    android:layout_width="wrap_content"
+                    android:focusable="false"
+                    android:layout_height="wrap_content"/>
+
+                <ImageView
+                    android:id="@+id/txtDelete"
+                    android:src="@drawable/ic_delete"
+                    android:tooltipText="@string/delete"
+                    style="@style/list_bottom_icon"
+                    android:layout_width="wrap_content"
+                    android:focusable="false"
+                    android:layout_height="match_parent"/>
+
+
+                <ImageView
+                    android:id="@+id/txtOcr"
+                    android:src="@drawable/ic_ocr"
+                    android:tooltipText="OCR"
+                    android:focusable="false"
+                    style="@style/list_bottom_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"/>
+
+                <ImageView
+                    android:id="@+id/txtDetails"
+                    android:src="@drawable/ic_details"
+                    android:tooltipText="@string/details"
+                    android:focusable="false"
+                    style="@style/list_bottom_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"/>
+
+                <ImageView
+                    android:id="@+id/txtSetWallpage"
+                    android:src="@drawable/ic_wallpaper"
+                    android:tooltipText="@string/set_wallpage"
+                    style="@style/list_bottom_icon"
                     android:focusable="false"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"/>
 
                 <ImageView
-                    android:id="@+id/imgZoomIn"
-                    android:src="@drawable/ic_plus"
+                    android:id="@+id/txtFavorite"
+                    android:src="@drawable/ic_favorite_border"
+                    android:tooltipText="@string/favorite"
+                    style="@style/list_bottom_icon"
                     android:focusable="false"
-                    style="@style/list_bottom_button"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"/>
 
-
-
+                <ImageView
+                    android:id="@+id/txtShare"
+                    android:src="@drawable/ic_share"
+                    android:tooltipText="@string/share"
+                    style="@style/list_bottom_icon"
+                    android:focusable="false"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"/>
         </LinearLayout>
 
 
-        <ImageView
-            android:id="@+id/txtEdit"
-            android:src="@drawable/ic_edit"
-            android:tooltipText="@string/edit"
-            style="@style/list_bottom_icon"
-            android:layout_width="wrap_content"
-            android:focusable="false"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/txtRotate"
-            android:tooltipText="@string/rotate"
-            android:src="@drawable/ic_right_rotate"
-            style="@style/list_bottom_icon"
-            android:layout_width="wrap_content"
-            android:focusable="false"
-            android:layout_height="wrap_content"/>
-
-        <ImageView
-            android:id="@+id/txtDelete"
-            android:src="@drawable/ic_delete"
-            android:tooltipText="@string/delete"
-            style="@style/list_bottom_icon"
-            android:layout_width="wrap_content"
-            android:focusable="false"
-            android:layout_height="match_parent"/>
-
-
-        <ImageView
-            android:id="@+id/txtOcr"
-            android:src="@drawable/ic_ocr"
-            android:tooltipText="OCR"
-            android:focusable="false"
-            style="@style/list_bottom_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/txtDetails"
-            android:src="@drawable/ic_details"
-            android:tooltipText="@string/details"
-            android:focusable="false"
-            style="@style/list_bottom_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/txtSetWallpage"
-            android:src="@drawable/ic_wallpaper"
-            android:tooltipText="@string/set_wallpage"
-            style="@style/list_bottom_icon"
-            android:focusable="false"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/txtFavorite"
-            android:src="@drawable/ic_favorite_border"
-            android:tooltipText="@string/favorite"
-            style="@style/list_bottom_icon"
-            android:focusable="false"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/txtShare"
-            android:src="@drawable/ic_share"
-            android:tooltipText="@string/share"
-            style="@style/list_bottom_icon"
-            android:focusable="false"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
 
 </LinearLayout>

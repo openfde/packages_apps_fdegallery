@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -247,12 +249,21 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     @Override
     public void onJumpEvent(Multimedia picture) {
         SPUtils.putUserInfo(context, "curPicPath", picture.getPath());
-        Intent intent = new Intent();
-        intent.putExtra("picture_data", picture);
-        intent.setClass(context, PicturePreviewActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        baseFragment.getActivity().startActivity(intent);
-//        baseFragment.getActivity().startActivityFromFragment(baseFragment, intent, Constant.REQUEST_DELETE_PHOTO);
+        // 双击图片：跳转到右侧内嵌的预览 Fragment
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(PicturePreviewFragment.ARG_PICTURE, picture);
+            NavHostFragment.findNavController(baseFragment)
+                    .navigate(R.id.nav_preview, bundle);
+        } catch (Exception e) {
+            // 兜底：不在 Navigation 容器中时，仍然用 Activity 打开
+            e.printStackTrace();
+            Intent intent = new Intent();
+            intent.putExtra(PicturePreviewFragment.ARG_PICTURE, picture);
+            intent.setClass(context, PicturePreviewActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            baseFragment.getActivity().startActivity(intent);
+        }
     }
 
 

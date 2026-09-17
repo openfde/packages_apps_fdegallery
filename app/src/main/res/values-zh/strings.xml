@@ -7,6 +7,8 @@
     <string name="menu_collection">收藏</string>
     <string name="menu_trash">回收站</string>
     <string name="menu_search">搜索</string>
+    <string name="menu_preview">图片预览</string>
+    <string name="back">返回</string>
 
     <string name="search_hint">搜索图片、视频</string>
     <string name="search_clear">清除</string>

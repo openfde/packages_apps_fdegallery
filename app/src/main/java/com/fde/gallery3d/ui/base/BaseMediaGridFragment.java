@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +24,7 @@ import com.fde.gallery3d.ui.adapter.MediaGridAdapter;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.favorite.FavoriteStore;
+import com.fde.gallery3d.ui.picture.PicturePreviewFragment;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.view.CustomScrollBarView;
 import com.fde.gallery3d.ui.view.RecyclerScrollBinder;
@@ -180,16 +182,24 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         if (media == null || media.getPath() == null) {
             return;
         }
-        Intent intent = new Intent();
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         if (media.getMediaType() == Constant.MEDIA_VIDEO) {
+            Intent intent = new Intent();
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("video_data", media);
             intent.setClass(requireContext(), VideoPlayActivity.class);
+            startActivity(intent);
         } else {
-            intent.putExtra("picture_data", media);
-            intent.setClass(requireContext(), PicturePreviewActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(PicturePreviewFragment.ARG_PICTURE, media);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.nav_preview, bundle);
         }
-        startActivity(intent);
+
+
+
+
+
     }
 
     protected void toast(String text) {

@@ -14,6 +14,8 @@
     <string name="menu_collection">Favorites</string>
     <string name="menu_trash">Trash</string>
     <string name="menu_search">Search</string>
+    <string name="menu_preview">Preview</string>
+    <string name="back">Back</string>
     <string name="search_hint">Search photos &amp; videos</string>
     <string name="search_clear">Clear</string>
     <string name="search_empty">No matching photos or videos</string>
