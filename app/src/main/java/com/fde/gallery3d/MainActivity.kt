@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     private var root: View? = null
     private var captionBar: View? = null
     private var leftNavigator: View? = null
+    private var layoutBrand: View? = null
+    private var viewDivider: View? = null
     private var materialToolbar: MaterialToolbar? = null
     private var captionText: TextView? = null
 
@@ -66,6 +68,8 @@ class MainActivity : AppCompatActivity() {
         root = findViewById(R.id.activity_container)
         captionBar = findViewById(R.id.caption_bar)
         leftNavigator = findViewById(R.id.left_layout)
+        viewDivider = findViewById(R.id.view_divider)
+        layoutBrand = findViewById(R.id.layout_brand)
         materialToolbar = findViewById(R.id.materialToolbar)
         captionText = findViewById(R.id.caption_text)
 
@@ -95,8 +99,12 @@ class MainActivity : AppCompatActivity() {
             Log.d("Fullscreen", "isFullscreen=$isFullscreen")
             if(isFullscreen){
                 leftNavigator?.visibility = View.VISIBLE
+                viewDivider?.visibility = View.VISIBLE
+                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.side_bg)
             }else{
                 leftNavigator?.visibility = View.GONE
+                viewDivider?.visibility = View.GONE
+                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.app_white)
             }
             insets
         }
@@ -118,7 +126,6 @@ class MainActivity : AppCompatActivity() {
                     R.id.nav_collection,
                     R.id.nav_trash,
                     R.id.nav_search,
-                    R.id.nav_preview,
                     R.id.nav_settings
                 ),
                 drawerLayout

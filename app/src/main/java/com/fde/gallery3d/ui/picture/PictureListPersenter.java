@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -31,7 +30,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -81,6 +80,7 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     BaseFragment baseFragment;
 
     GridLayoutManager gridLayoutManager;
+    View.OnLayoutChangeListener windowLayoutListener;
 
     public PictureListPersenter(BaseFragment baseFragment, View view) {
         this.baseFragment = baseFragment;
@@ -162,17 +162,30 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
 
     private void listenWindowResize() {
         View root = baseFragment.getActivity().getWindow().getDecorView();
-        root.addOnLayoutChangeListener(
-                (v, l, t, r, b, ol, ot, orr, ob) -> {
-                    int newW = r - l;
-                    int oldW = orr - ol;
-//                    if (newW != oldW) {
-                        onWindowWidthChanged(newW);
-//                    }
-                });
+        windowLayoutListener = (v, l, t, r, b, ol, ot, orr, ob) -> onWindowWidthChanged(r - l);
+        root.addOnLayoutChangeListener(windowLayoutListener);
+        // 立即按当前窗口宽度计算一次，避免首帧 itemSize 为 0
+        onWindowWidthChanged(root.getWidth());
+    }
+
+    /**
+     * 列表 Fragment 的 View 销毁时释放监听，避免多次创建后残留监听导致重复刷新
+     */
+    public void release() {
+        if (windowLayoutListener != null && baseFragment.getActivity() != null) {
+            try {
+                baseFragment.getActivity().getWindow().getDecorView()
+                        .removeOnLayoutChangeListener(windowLayoutListener);
+            } catch (Exception ignored) {
+            }
+        }
+        windowLayoutListener = null;
     }
 
     private void onWindowWidthChanged(int widthPx) {
+        if (widthPx <= 0 || gridLayoutManager == null || pictureListAdapter == null) {
+            return;
+        }
         int minItemPx = DeviceUtils.dpToPx(context, 160);
         int span = Math.max(1, widthPx / minItemPx);
 
@@ -187,14 +200,83 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
      * @param context
      */
     public void getAllImages(Context context) {
-        if (list != null) {
-            list.clear();
+        if (list == null) {
+            return;
         }
-        list.addAll(FileUtils.getAllImages(context));
+        List<Multimedia> images = FileUtils.getAllImages(context);
         if (pictureListAdapter == null) {
             LogTools.i("pictureListAdapter is null");
-        } else {
-            pictureListAdapter.notifyDataSetChanged();
+            return;
+        }
+        // 用 DiffUtil 只更新真正变化的条目，避免整表重新绑定/重新加载缩略图
+        DiffUtil.DiffResult diffResult =
+                DiffUtil.calculateDiff(new MediaDiffCallback(list, images), true);
+        list.clear();
+        list.addAll(images);
+        diffResult.dispatchUpdatesTo(pictureListAdapter);
+    }
+
+    /**
+     * 预览页修改了某张图片后，强制只重新绑定这一条，让缩略图立即刷新
+     */
+    public void notifyImageChanged(String path) {
+        if (path == null || pictureListAdapter == null || list == null) {
+            return;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            if (path.equals(list.get(i).getPath())) {
+                pictureListAdapter.notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    /**
+     * 比较新旧图片列表：id / 路径判断是否同一条，时间、大小、尺寸判断内容是否变化
+     */
+    private static class MediaDiffCallback extends DiffUtil.Callback {
+
+        private final List<Multimedia> oldList;
+        private final List<Multimedia> newList;
+
+        MediaDiffCallback(List<Multimedia> oldList, List<Multimedia> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            if (oldItem.getId() != 0 && oldItem.getId() == newItem.getId()) {
+                return true;
+            }
+            return oldItem.getPath() != null && oldItem.getPath().equals(newItem.getPath());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            return equals(oldItem.getPath(), newItem.getPath())
+                    && oldItem.getDateTaken() == newItem.getDateTaken()
+                    && oldItem.getSize() == newItem.getSize()
+                    && oldItem.getWidth() == newItem.getWidth()
+                    && oldItem.getHeight() == newItem.getHeight();
+        }
+
+        private static boolean equals(Object left, Object right) {
+            return left == null ? right == null : left.equals(right);
         }
     }
 
@@ -249,14 +331,11 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     @Override
     public void onJumpEvent(Multimedia picture) {
         SPUtils.putUserInfo(context, "curPicPath", picture.getPath());
-        // 双击图片：跳转到右侧内嵌的预览 Fragment
+        // 双击图片：以覆盖层方式打开预览，列表自身的 View / 滚动位置保持不变
         try {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(PicturePreviewFragment.ARG_PICTURE, picture);
-            NavHostFragment.findNavController(baseFragment)
-                    .navigate(R.id.nav_preview, bundle);
+            PicturePreviewFragment.open(baseFragment, picture);
         } catch (Exception e) {
-            // 兜底：不在 Navigation 容器中时，仍然用 Activity 打开
+            // 兜底：不在 Fragment 容器中时，仍然用 Activity 打开
             e.printStackTrace();
             Intent intent = new Intent();
             intent.putExtra(PicturePreviewFragment.ARG_PICTURE, picture);

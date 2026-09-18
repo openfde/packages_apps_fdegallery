@@ -39,6 +39,7 @@ import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.event.ViewEvent;
 import com.fde.gallery3d.ui.utils.LogTools;
 
+import java.io.File;
 import java.util.List;
 
 public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.PictureListViewHolder> {
@@ -143,6 +144,7 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
         ImageView imageView;
         CheckBox checkBox;
         String path;
+        long lastModified;
 
         public PictureListViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -154,8 +156,15 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
         void bind(Multimedia item, int sizePx) {
             updateSize(sizePx);
 
-            if (!item.getPath().equals(path)) {
+            long modified = 0L;
+            try {
+                modified = new File(item.getPath()).lastModified();
+            } catch (Exception ignored) {
+            }
+            // 路径相同但文件被重新保存（例如预览页旋转）时也要重新加载
+            if (!item.getPath().equals(path) || modified != lastModified) {
                 path = item.getPath();
+                lastModified = modified;
                 Glide.with(imageView)
                         .load(item.getPath())
                         .error(R.mipmap.ic_launcher)

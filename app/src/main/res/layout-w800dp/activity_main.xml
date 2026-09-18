@@ -19,6 +19,7 @@
 
             <!-- 左上角品牌区，宽度与左侧导航栏一致 -->
             <LinearLayout
+                android:id="@+id/layout_brand"
                 android:layout_width="@dimen/left_width"
                 android:layout_height="match_parent"
                 android:background="@color/side_bg"
@@ -80,6 +81,7 @@
 
             <!-- 左侧栏与右侧标题栏之间的竖直分隔线 -->
             <View
+                android:id="@+id/view_divider"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"

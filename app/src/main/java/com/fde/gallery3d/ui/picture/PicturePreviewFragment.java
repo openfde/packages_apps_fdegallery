@@ -39,13 +39,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.bumptech.glide.Glide;
@@ -84,6 +88,13 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
 
     /** 双击图片列表时传入的图片 */
     public static final String ARG_PICTURE = "picture_data";
+
+    /** 以覆盖层方式显示时使用的 Fragment tag */
+    public static final String TAG = "picture_preview_overlay";
+
+    /** 预览页修改了图片（旋转 / 编辑 / 删除）时通知列表刷新 */
+    public static final String RESULT_PREVIEW_CHANGED = "picture_preview_changed";
+    public static final String KEY_CHANGED_PATH = "changed_path";
 
     private static final String ACTION_EDIT = "android.intent.action.EDIT";
 
@@ -125,6 +136,8 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
     private AnimDrawablePlayer animDrawablePlayer;
     private Bitmap rotatedBitmap;
 
+    private NavController.OnDestinationChangedListener destinationListener;
+
     public PicturePreviewFragment() {
     }
 
@@ -137,6 +150,31 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         args.putSerializable(ARG_PICTURE, picture);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * 以“覆盖层”的方式打开预览：把预览 Fragment 直接 add 到内容容器上，
+     * 而不是替换列表 Fragment。这样退出预览时列表的 View、滚动位置、
+     * 已经加载好的缩略图都不会被销毁重建，只会刷新真正变化的图片。
+     */
+    public static void open(Fragment source, Multimedia picture) {
+        if (source == null || picture == null) {
+            return;
+        }
+        FragmentActivity activity = source.getActivity();
+        if (activity == null) {
+            return;
+        }
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        if (fragmentManager.isStateSaved()
+                || fragmentManager.findFragmentByTag(TAG) != null) {
+            return;
+        }
+        fragmentManager.beginTransaction()
+                .setReorderingAllowed(true)
+                .add(R.id.preview_host, newInstance(picture), TAG)
+                .addToBackStack(TAG)
+                .commit();
     }
 
     @Override
@@ -161,6 +199,8 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         animDrawablePlayer = AnimFactory.INSTANCE.loading(context, imgDetails);
         startAnimation();
         loadPicture();
+        registerBackPressedCallback();
+        observeDestinationChange();
     }
 
     @Override
@@ -169,13 +209,86 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         if (rotatedBitmap != null && picture != null) {
             if (rotateAngle % 360 != 0) {
                 BitmapUtils.saveBitmap(context, rotatedBitmap, picture.getPath());
+                notifyPreviewChanged(picture.getPath());
             }
         }
+        removeDestinationListener();
         if (animDrawablePlayer != null) {
             animDrawablePlayer.stop();
             animDrawablePlayer = null;
         }
         super.onDestroyView();
+    }
+
+    /**
+     * 系统返回键：关闭预览回到列表，避免命中底层页面的返回逻辑
+     */
+    private void registerBackPressedCallback() {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        activity.getOnBackPressedDispatcher().addCallback(
+                getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        closePreview(Activity.RESULT_CANCELED);
+                    }
+                });
+    }
+
+    /**
+     * 预览覆盖在列表上方时左侧导航依然可见，用户切到其它页面时自动关闭预览，
+     * 避免覆盖层一直停留在最上面。
+     */
+    private void observeDestinationChange() {
+        final NavController navController = findNavController();
+        if (navController == null) {
+            return;
+        }
+        NavDestination current = navController.getCurrentDestination();
+        final int openedDestination = current == null ? 0 : current.getId();
+        destinationListener = new NavController.OnDestinationChangedListener() {
+            @Override
+            public void onDestinationChanged(@NonNull NavController controller,
+                                             @NonNull NavDestination destination,
+                                             @Nullable Bundle arguments) {
+                if (destination.getId() != openedDestination) {
+                    closePreview(Activity.RESULT_CANCELED);
+                }
+            }
+        };
+        navController.addOnDestinationChangedListener(destinationListener);
+    }
+
+    private void removeDestinationListener() {
+        if (destinationListener == null) {
+            return;
+        }
+        NavController navController = findNavController();
+        if (navController != null) {
+            navController.removeOnDestinationChangedListener(destinationListener);
+        }
+        destinationListener = null;
+    }
+
+    /**
+     * 预览是 add 到内容容器上的，不在 NavHostFragment 内部，
+     * 所以不能直接用 viewId 找 NavController（该 id 同时属于外层容器和预览自身）。
+     */
+    @Nullable
+    private NavController findNavController() {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return null;
+        }
+        for (Fragment fragment : activity.getSupportFragmentManager().getFragments()) {
+            if (fragment instanceof NavHostFragment) {
+                return ((NavHostFragment) fragment).getNavController();
+            }
+        }
+        return null;
     }
 
     /**
@@ -289,15 +402,26 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
             activity.finish();
             return;
         }
-        try {
-            NavController navController = NavHostFragment.findNavController(this);
-            if (navController.getCurrentDestination() != null
-                    && navController.getCurrentDestination().getId() == R.id.nav_preview) {
-                navController.popBackStack();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        // 覆盖层模式：只弹出预览自身的回退栈，列表 Fragment 不会被重建
+        FragmentManager fragmentManager = getParentFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack(TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
+    }
+
+    /**
+     * 通知列表：某张图片的内容发生了变化（旋转 / 编辑 / 删除）
+     */
+    public void notifyPreviewChanged(String path) {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        Bundle bundle = new Bundle();
+        if (path != null) {
+            bundle.putString(KEY_CHANGED_PATH, path);
+        }
+        activity.getSupportFragmentManager().setFragmentResult(RESULT_PREVIEW_CHANGED, bundle);
     }
 
     /**
@@ -448,6 +572,12 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
                     && requestCode == Constant.ACTION_REQUEST_EDITIMAGE
                     && picturePreviewPersenter != null) {
                 picturePreviewPersenter.handleEditorImage(data);
+                String changedPath = data == null
+                        ? null : data.getStringExtra(EditImageActivity.EXTRA_OUTPUT);
+                if (changedPath == null && picture != null) {
+                    changedPath = picture.getPath();
+                }
+                notifyPreviewChanged(changedPath);
                 closePreview(Activity.RESULT_OK);
             }
         }

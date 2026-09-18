@@ -149,6 +149,9 @@ public class PicturePreviewPersenter {
                     context.getString(moved ? R.string.moved_to_trash_count
                             : R.string.move_to_trash_failed, moved ? 1 : 0),
                     Toast.LENGTH_SHORT).show();
+            if (moved && pic != null) {
+                fragment.notifyPreviewChanged(pic.getPath());
+            }
             fragment.closePreview(Constant.REQUEST_DELETE_PHOTO);
         } catch (Exception e) {
             e.printStackTrace();

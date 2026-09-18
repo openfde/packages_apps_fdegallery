@@ -48,6 +48,7 @@ import com.fde.gallery3d.ui.utils.LogTools;
 public class PictureListFragment extends BaseFragment {
     Context context;
     PictureListPersenter pictureListPersenter;
+    ContentObserver mediaObserver;
 
     public PictureListFragment() {
     }
@@ -84,15 +85,44 @@ public class PictureListFragment extends BaseFragment {
         context.getContentResolver().registerContentObserver(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 true,
-                new ContentObserver(new Handler(Looper.getMainLooper())) {
+                mediaObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
                     @Override
                     public void onChange(boolean selfChange) {
-                        pictureListPersenter.getAllImages(context);
+                        if (pictureListPersenter != null) {
+                            pictureListPersenter.getAllImages(context);
+                        }
                     }
                 }
         );
 
+        // 预览页覆盖在列表上方，退出时只有真正修改过的图片才需要刷新
+        getActivity().getSupportFragmentManager().setFragmentResultListener(
+                PicturePreviewFragment.RESULT_PREVIEW_CHANGED,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    if (pictureListPersenter != null) {
+                        pictureListPersenter.getAllImages(context);
+                        pictureListPersenter.notifyImageChanged(
+                                result.getString(PicturePreviewFragment.KEY_CHANGED_PATH));
+                    }
+                });
+
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (mediaObserver != null) {
+            try {
+                context.getContentResolver().unregisterContentObserver(mediaObserver);
+            } catch (Exception ignored) {
+            }
+            mediaObserver = null;
+        }
+        if (pictureListPersenter != null) {
+            pictureListPersenter.release();
+        }
+        super.onDestroyView();
     }
 
     @Override

@@ -13,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -190,10 +189,8 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
             intent.setClass(requireContext(), VideoPlayActivity.class);
             startActivity(intent);
         } else {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(PicturePreviewFragment.ARG_PICTURE, media);
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.nav_preview, bundle);
+            // 覆盖层方式打开预览，返回时列表不会被重建，滚动位置和缩略图得以保留
+            PicturePreviewFragment.open(this, media);
         }
 
 
