@@ -445,6 +445,7 @@ public class EditImageActivity extends BaseActivity {
     private final class SaveBtnClick implements OnClickListener {
         @Override
         public void onClick(View v) {
+            Log.i("bella", "doInBackground  mOpTimes " + mOpTimes);
             if (mOpTimes == 0) {//并未修改图片
                 onSaveTaskDone();
             } else {

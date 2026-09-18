@@ -45,7 +45,7 @@
             android:layout_marginHorizontal="@dimen/image_edit_menu_margin"
             android:gravity="center"
             android:text="@string/filter"
-            android:visibility="gone"
+            android:visibility="visible"
             android:textColor="@color/white"
             android:textSize="@dimen/image_edit_text_size"/>
 

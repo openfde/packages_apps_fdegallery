@@ -86,6 +86,7 @@ public class FilterListFragment extends BaseEditFragment {
             }
         });
         setUpFliters();
+        onShow();
     }
 
     @Override
