@@ -39,12 +39,14 @@
     </LinearLayout>
 
 
-    <CheckBox
-        android:id="@+id/checkBox"
-        android:visibility="gone"
-        android:layout_gravity="bottom|end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <View
+        android:id="@+id/selectBorder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_item_selected"
+        android:visibility="gone"/>
 
 
 </FrameLayout>

@@ -13,13 +13,12 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/rootView"
     android:gravity="center"
     android:layout_gravity="center"
-    android:background="@color/white"
     android:orientation="vertical">
 
 
@@ -27,7 +26,6 @@
         android:layout_width="match_parent"
         android:layout_marginRight="2dp"
         android:layout_marginTop="2dp"
-        android:layout_centerInParent="true"
         android:layout_height="match_parent">
 
         <ImageView
@@ -46,17 +44,18 @@
         android:background="@color/app_gray"
         android:textColor="@color/white"
         android:gravity="center"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
 
-    <CheckBox
-        android:id="@+id/checkBox"
-        android:visibility="gone"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <View
+        android:id="@+id/selectBorder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_item_selected"
+        android:visibility="gone"/>
 
-</RelativeLayout>
+</FrameLayout>

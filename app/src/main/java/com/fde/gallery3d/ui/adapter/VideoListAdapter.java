@@ -25,10 +25,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -86,15 +84,18 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
         Multimedia video = list.get(position);
         holder.bind(video, itemSizePx);
 
-        holder.checkBox.setVisibility(video.isShowCheckbox() ? View.VISIBLE : View.GONE);
-        holder.checkBox.setChecked(video.isSelected());
-
         GestureDetector detector = new GestureDetector(context,
                 new GestureDetector.SimpleOnGestureListener() {
 
                     @Override
                     public boolean onDown(MotionEvent e) {
                         return true; // ⚠️ 必须返回 true
+                    }
+
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        viewEvent.onSelectEvent(position, 0, !video.isSelected());
+                        return true;
                     }
 
                     @Override
@@ -113,12 +114,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
             return detector.onTouchEvent(event);
         });
 
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                viewEvent.onSelectEvent(position,0, b);
-            }
-        });
+        holder.selectBorder.setVisibility(video.isSelected() ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -140,14 +136,14 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
 
     class VideoListViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        RelativeLayout rootView;
-        CheckBox checkBox;
+        FrameLayout rootView;
+        View selectBorder;
         String path;
         public VideoListViewHolder(@NonNull View itemView) {
             super(itemView);
-            rootView = (RelativeLayout) itemView.findViewById(R.id.rootView);
+            rootView = (FrameLayout) itemView.findViewById(R.id.rootView);
             imageView = (ImageView) itemView.findViewById(R.id.imageView);
-            checkBox = (CheckBox) itemView.findViewById(R.id.checkBox);
+            selectBorder = itemView.findViewById(R.id.selectBorder);
         }
 
         void bind(Multimedia item, int sizePx) {

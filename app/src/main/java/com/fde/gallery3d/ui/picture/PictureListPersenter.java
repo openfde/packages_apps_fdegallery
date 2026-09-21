@@ -148,15 +148,6 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         });
 
 
-        recyclerView.setOnContextClickListener(new View.OnContextClickListener() {
-
-            @Override
-            public boolean onContextClick(View v) {
-                onRightEvent(0,0);
-                return false;
-            }
-        });
-
         return true;
     }
 
@@ -290,12 +281,6 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         isShowBottomBtn = isShow;
         try {
             layoutBottomBtn.setVisibility(isShowBottomBtn ? View.VISIBLE : View.GONE);
-            for (int i = 0; i < list.size(); i++) {
-                Multimedia picture = list.get(i);
-                picture.setShowCheckbox(isShowBottomBtn);
-                list.set(i, picture);
-            }
-            pictureListAdapter.notifyDataSetChanged();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -320,12 +305,54 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     @Override
     public void onSelectEvent(int pos, int groupPos, boolean isSelect) {
         try {
-            Multimedia picture = list.get(pos);
-            picture.setSelected(isSelect);
-            list.set(pos, picture);
+            if (pos >= 0 && pos < list.size()) {
+                Multimedia picture = list.get(pos);
+                picture.setSelected(isSelect);
+                list.set(pos, picture);
+                pictureListAdapter.notifyItemChanged(pos);
+            }
+            updateBottomBarBySelection();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateBottomBarBySelection() {
+        boolean anySelected = false;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).isSelected()) {
+                anySelected = true;
+                break;
+            }
+        }
+        if (anySelected != isShowBottomBtn) {
+            showOrHideBottomBtn(anySelected);
+        }
+    }
+
+    private void clearAllSelection() {
+        isAllSelected = false;
+        for (int i = 0; i < list.size(); i++) {
+            Multimedia picture = list.get(i);
+            if (picture.isSelected()) {
+                picture.setSelected(false);
+                list.set(i, picture);
+            }
+        }
+        pictureListAdapter.notifyDataSetChanged();
+        txtAllSelected.setText(context.getString(R.string.select_all));
+        Drawable drawableTop = context.getDrawable(R.drawable.ic_main_all_selected);
+        drawableTop.setBounds(
+                0,
+                0,
+                drawableTop.getIntrinsicWidth(),
+                drawableTop.getIntrinsicHeight());
+        txtAllSelected.setCompoundDrawables(
+                null,
+                drawableTop,
+                null,
+                null);
+        showOrHideBottomBtn(false);
     }
 
     @Override
@@ -493,10 +520,11 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
                     null,
                     null);
 
+            updateBottomBarBySelection();
+
         } else if (id == R.id.txtCancel) {
 
-            isShowBottomBtn = !isShowBottomBtn;
-            showOrHideBottomBtn(isShowBottomBtn);
+            clearAllSelection();
         }
     }
 
@@ -513,8 +541,7 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
                         context.getString(R.string.move_to_trash_failed));
             }
             pictureListAdapter.notifyDataSetChanged();
-            isShowBottomBtn = !isShowBottomBtn;
-            showOrHideBottomBtn(isShowBottomBtn);
+            updateBottomBarBySelection();
         }
     }
 }

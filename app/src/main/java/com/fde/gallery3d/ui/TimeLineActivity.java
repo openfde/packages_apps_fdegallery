@@ -119,16 +119,6 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
             public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
             }
         });
-
-
-        recyclerView.setOnContextClickListener(new View.OnContextClickListener() {
-
-            @Override
-            public boolean onContextClick(View v) {
-                onRightEvent(0,0);
-                return false;
-            }
-        });
     }
 
     private void listenWindowResize() {
@@ -170,12 +160,6 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
 
         try {
             layoutBottomBtn.setVisibility(isShowBottomBtn ? View.VISIBLE : View.GONE);
-            for (int i = 0; i < list.size(); i++) {
-                Multimedia picture = list.get(i);
-                picture.setShowCheckbox(isShowBottomBtn);
-                list.set(i, picture);
-            }
-            timeLineAdapter.notifyDataSetChanged();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -318,10 +302,11 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
                     null,
                     null);
 
+            updateBottomBarBySelection();
+
         } else if (id == R.id.txtCancel) {
 
-            isShowBottomBtn = !isShowBottomBtn;
-            showOrHideBottomBtn(isShowBottomBtn);
+            clearAllSelection();
         }
     }
 
@@ -334,12 +319,54 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void onSelectEvent(int pos, int groupPos, boolean isSelect) {
         try {
-            Multimedia picture = list.get(pos);
-            picture.setSelected(isSelect);
-            list.set(pos, picture);
+            if (pos >= 0 && pos < list.size()) {
+                Multimedia picture = list.get(pos);
+                picture.setSelected(isSelect);
+                list.set(pos, picture);
+                timeLineAdapter.notifyItemChanged(pos);
+            }
+            updateBottomBarBySelection();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateBottomBarBySelection() {
+        boolean anySelected = false;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).isSelected()) {
+                anySelected = true;
+                break;
+            }
+        }
+        if (anySelected != isShowBottomBtn) {
+            showOrHideBottomBtn(anySelected);
+        }
+    }
+
+    private void clearAllSelection() {
+        isAllSelected = false;
+        for (int i = 0; i < list.size(); i++) {
+            Multimedia picture = list.get(i);
+            if (picture.isSelected()) {
+                picture.setSelected(false);
+                list.set(i, picture);
+            }
+        }
+        timeLineAdapter.notifyDataSetChanged();
+        txtAllSelected.setText(context.getString(R.string.select_all));
+        Drawable drawableTop = context.getDrawable(R.drawable.ic_main_all_selected);
+        drawableTop.setBounds(
+                0,
+                0,
+                drawableTop.getIntrinsicWidth(),
+                drawableTop.getIntrinsicHeight());
+        txtAllSelected.setCompoundDrawables(
+                null,
+                drawableTop,
+                null,
+                null);
+        showOrHideBottomBtn(false);
     }
 
     @Override
@@ -363,8 +390,7 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
                 showShortToast(getString(R.string.move_to_trash_failed));
             }
             timeLineAdapter.notifyDataSetChanged();
-            isShowBottomBtn = !isShowBottomBtn;
-            showOrHideBottomBtn(isShowBottomBtn);
+            updateBottomBarBySelection();
         }
     }
 

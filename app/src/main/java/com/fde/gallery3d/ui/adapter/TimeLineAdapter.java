@@ -8,10 +8,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -74,8 +72,7 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
         Multimedia multimedia = list.get(position);
         holder.bind(multimedia, itemSizePx);
 
-        holder.checkBox.setVisibility(multimedia.isShowCheckbox() ? View.VISIBLE : View.GONE);
-        holder.checkBox.setChecked(multimedia.isSelected());
+        holder.selectBorder.setVisibility(multimedia.isSelected() ? View.VISIBLE : View.GONE);
         holder.txtDate.setText(StringUtils.conversionTime(1000* multimedia.getDateTaken()));
 
         GestureDetector detector = new GestureDetector(context,
@@ -84,6 +81,12 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
                     @Override
                     public boolean onDown(MotionEvent e) {
                         return true; // ⚠️ 必须返回 true
+                    }
+
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        viewEvent.onSelectEvent(position, groupPos, !multimedia.isSelected());
+                        return true;
                     }
 
                     @Override
@@ -109,22 +112,6 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
             return detector.onTouchEvent(event);
         });
 
-//        holder.rootView.setOnContextClickListener(new View.OnContextClickListener() {
-//            @Override
-//            public boolean onContextClick(View view) {
-////                holder.checkBox.setVisibility(View.VISIBLE);
-//                viewEvent.onRightEvent(position,groupPos);
-//                return false;
-//            }
-//        });
-
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                viewEvent.onSelectEvent(position,groupPos, b);
-            }
-        });
-
     }
 
     @Override
@@ -146,17 +133,17 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
 
     class TimeLineListViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        RelativeLayout rootView;
+        FrameLayout rootView;
 
         TextView txtDate;
-        CheckBox checkBox;
+        View selectBorder;
         String path;
 
         public TimeLineListViewHolder(@NonNull View itemView) {
             super(itemView);
-            rootView = (RelativeLayout) itemView.findViewById(R.id.rootView);
+            rootView = (FrameLayout) itemView.findViewById(R.id.rootView);
             imageView = (ImageView) itemView.findViewById(R.id.imageView);
-            checkBox = (CheckBox) itemView.findViewById(R.id.checkBox);
+            selectBorder = itemView.findViewById(R.id.selectBorder);
             txtDate =(TextView) itemView.findViewById(R.id.txtDate);
         }
 

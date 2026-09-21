@@ -24,8 +24,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -92,6 +90,12 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
                     }
 
                     @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        viewEvent.onSelectEvent(position, 0, !picture.isSelected());
+                        return true;
+                    }
+
+                    @Override
                     public boolean onDoubleTap(MotionEvent e) {
                         viewEvent.onJumpEvent(picture);
                         return true;
@@ -102,21 +106,12 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
             return detector.onTouchEvent(event);
         });
 
-        holder.checkBox.setVisibility(picture.isShowCheckbox() ?View.VISIBLE:View.INVISIBLE);
-        holder.checkBox.setChecked(picture.isSelected());
+        holder.selectBorder.setVisibility(picture.isSelected() ? View.VISIBLE : View.GONE);
 
         holder.rootView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 return false;
-            }
-        });
-
-
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                viewEvent.onSelectEvent(position,0, b);
             }
         });
     }
@@ -142,7 +137,7 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
     class PictureListViewHolder extends RecyclerView.ViewHolder {
         FrameLayout rootView;
         ImageView imageView;
-        CheckBox checkBox;
+        View selectBorder;
         String path;
         long lastModified;
 
@@ -150,7 +145,7 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
             super(itemView);
             rootView = (FrameLayout) itemView.findViewById(R.id.rootView);
             imageView = (ImageView) itemView.findViewById(R.id.imageView);
-            checkBox = (CheckBox) itemView.findViewById(R.id.checkBox);
+            selectBorder = itemView.findViewById(R.id.selectBorder);
         }
 
         void bind(Multimedia item, int sizePx) {
