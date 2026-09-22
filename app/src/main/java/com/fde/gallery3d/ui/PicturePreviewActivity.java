@@ -79,10 +79,10 @@ import com.fde.imageeditlibrary.editimage.EditImageActivity;
 import com.fde.imageeditlibrary.editimage.utils.BitmapUtils;
 import com.fde.imageeditlibrary.editimage.utils.Utils;
 import com.fde.imageeditlibrary.editimage.view.RotateImageView;
-// import com.google.mlkit.vision.common.InputImage;
-// import com.google.mlkit.vision.text.TextRecognition;
-// import com.google.mlkit.vision.text.TextRecognizer;
-// import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 import com.xinlan.imageeditlibrary.editimage.fliter.PhotoProcessing;
 import com.github.chrisbanes.photoview.PhotoView;
 
@@ -474,30 +474,30 @@ public class PicturePreviewActivity extends BaseActivity implements View.OnClick
             Bitmap bitmap =
                     BitmapFactory.decodeFile(picture.getPath());
 
-            // InputImage image =
-            //         InputImage.fromBitmap(bitmap, 0);
+            InputImage image =
+                    InputImage.fromBitmap(bitmap, 0);
 
-            // TextRecognizer recognizer =
-            //         TextRecognition.getClient(
-            //                 new ChineseTextRecognizerOptions.Builder()
-            //                         .build()
-            //         );
+            TextRecognizer recognizer =
+                    TextRecognition.getClient(
+                            new ChineseTextRecognizerOptions.Builder()
+                                    .build()
+                    );
 
-            // recognizer.process(image)
-            //         .addOnSuccessListener(result -> {
-            //             String text = result.getText();
+            recognizer.process(image)
+                    .addOnSuccessListener(result -> {
+                        String text = result.getText();
 
-            //             if (TextUtils.isEmpty(text)) {
-            //                 editOcrText.setText(
-            //                         getString(R.string.no_text)
-            //                 );
-            //             } else {
-            //                 editOcrText.setText(text);
-            //             }
-            //         })
-            //         .addOnFailureListener(e -> {
-            //             e.printStackTrace();
-            //         });
+                        if (TextUtils.isEmpty(text)) {
+                            editOcrText.setText(
+                                    getString(R.string.no_text)
+                            );
+                        } else {
+                            editOcrText.setText(text);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                    });
 
         } else if (id == R.id.txtDetails) {
 

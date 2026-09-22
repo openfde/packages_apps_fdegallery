@@ -1,4 +1,3 @@
-
 java_import {
     name: "com.google.code.gson_gson",
     jars: ["app/libs/gson-2.13.1.jar"],
@@ -59,12 +58,6 @@ android_library_import {
 }
 
 android_library_import {
-    name: "gallery-lib-text-recognition-chinese",
-    aars: ["app/libs/text-recognition-chinese-16.0.1.aar"],
-    sdk_version: "current",
-}
-
-android_library_import {
     name: "gallery-lib-baselib",
     aars: ["app/libs/baselib.aar"],
     sdk_version: "current",
@@ -75,6 +68,167 @@ android_library_import {
     aars: ["app/libs/documentfile-1.1.0.aar"],
     sdk_version: "current",
 }
+
+// ===========================================================================
+// ML Kit 文字识别(中文)
+//
+// Gradle 里的一行:
+//     implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
+//
+// 在 Soong 里必须展开成整条依赖链, 因为 ML Kit 的 AAR 是"薄"包:
+//   * text-recognition-chinese            -> 只有模型 assets (assets/mlkit-google-ocr-models/**)
+//   * play-services-mlkit-text-recognition-common -> TextRecognition/TextRecognizer/Text/InputImage 等 API
+//   * play-services-mlkit-text-recognition-chinese -> ChineseTextRecognizerOptions
+//   * text-recognition-bundled-common      -> 本地推理实现 + jni/*/libmlkit_google_ocr_pipeline.so
+//   * 其余为 GMS/Firebase/datatransport 运行时依赖
+//
+// 依赖包: app/libs/mlkit/   重新下载: bash tools/fetch-mlkit-deps.sh
+// ===========================================================================
+
+// 中文识别模型 (assets)
+android_library_import {
+    name: "mlkit-text-recognition-chinese",
+    aars: ["app/libs/mlkit/text-recognition-chinese-16.0.1.aar"],
+    sdk_version: "current",
+}
+
+// 本地推理实现 + 4 个 ABI 的 libmlkit_google_ocr_pipeline.so
+android_library_import {
+    name: "mlkit-text-recognition-bundled-common",
+    aars: ["app/libs/mlkit/text-recognition-bundled-common-17.0.0.aar"],
+    // 不加这行 .so 不会被打进 APK 的 lib/<abi>/ 目录
+    sdk_version: "current",
+}
+
+// com.google.mlkit.vision.text.TextRecognition / TextRecognizer / Text
+android_library_import {
+    name: "mlkit-play-services-text-recognition-common",
+    aars: ["app/libs/mlkit/play-services-mlkit-text-recognition-common-19.1.0.aar"],
+    sdk_version: "current",
+}
+
+// com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
+android_library_import {
+    name: "mlkit-play-services-text-recognition-chinese",
+    aars: ["app/libs/mlkit/play-services-mlkit-text-recognition-chinese-16.0.1.aar"],
+    sdk_version: "current",
+}
+
+// com.google.mlkit.vision.common.InputImage
+android_library_import {
+    name: "mlkit-vision-common",
+    aars: ["app/libs/mlkit/vision-common-17.3.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-vision-interfaces",
+    aars: ["app/libs/mlkit/vision-interfaces-16.3.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-common",
+    aars: ["app/libs/mlkit/common-18.11.0.aar"],
+    sdk_version: "current",
+}
+
+// com.google.android.gms.tasks.Task
+android_library_import {
+    name: "mlkit-play-services-tasks",
+    aars: ["app/libs/mlkit/play-services-tasks-18.2.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-play-services-base",
+    aars: ["app/libs/mlkit/play-services-base-18.5.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-play-services-basement",
+    aars: ["app/libs/mlkit/play-services-basement-18.4.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-odml-image",
+    aars: ["app/libs/mlkit/image-1.0.0-beta1.aar"],
+    sdk_version: "current",
+}
+
+// Firebase Components: MlKitInitProvider / 组件注册 (manifest 会被合并进 app)
+android_library_import {
+    name: "mlkit-firebase-components",
+    aars: ["app/libs/mlkit/firebase-components-16.1.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-firebase-encoders-json",
+    aars: ["app/libs/mlkit/firebase-encoders-json-17.1.0.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-transport-api",
+    aars: ["app/libs/mlkit/transport-api-2.2.1.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-transport-runtime",
+    aars: ["app/libs/mlkit/transport-runtime-2.2.6.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "mlkit-transport-backend-cct",
+    aars: ["app/libs/mlkit/transport-backend-cct-2.3.3.aar"],
+    sdk_version: "current",
+}
+
+java_import {
+    name: "mlkit-firebase-annotations",
+    jars: ["app/libs/mlkit/firebase-annotations-16.0.0.jar"],
+}
+
+java_import {
+    name: "mlkit-firebase-encoders",
+    jars: ["app/libs/mlkit/firebase-encoders-16.1.0.jar"],
+}
+
+java_import {
+    name: "mlkit-javax-inject",
+    jars: ["app/libs/mlkit/javax.inject-1.jar"],
+}
+
+
+cc_prebuilt_library_shared {
+    name: "libmlkit_google_ocr_pipeline",
+    system_ext_specific: true,          // 必须和 app 同分区, 否则 jni_libs 会报分区不一致
+    strip: { none: true },
+    arch: {
+        arm64:  { srcs: ["app/libs/mlkit/arm64-v8a/libmlkit_google_ocr_pipeline.so"] },
+        arm:    { srcs: ["app/libs/mlkit/armeabi-v7a/libmlkit_google_ocr_pipeline.so"] },
+        x86:    { srcs: ["app/libs/mlkit/x86/libmlkit_google_ocr_pipeline.so"] },
+        x86_64: { srcs: ["app/libs/mlkit/x86_64/libmlkit_google_ocr_pipeline.so"] },
+    },
+    shared_libs: [
+        "libEGL",
+        "libGLESv2",
+        "libandroid",
+        "libc",
+        "libdl",
+        "libjnigraphics",
+        "liblog",
+        "libm",
+        "libz",
+    ],
+}
+
+
 
 android_app {
     name: "FdeGallery",
@@ -87,6 +241,7 @@ android_app {
     resource_dirs: [
         "app/src/main/res",
     ],
+
     static_libs: [
         "androidx.core_core-ktx", 
         "androidx.lifecycle_lifecycle-runtime-ktx",
@@ -121,21 +276,49 @@ android_app {
         "androidx.annotation_annotation",
         "androidx.exifinterface_exifinterface",
         "gallery-lib-FFmpegMediaMetadataRetriever",
-        "gallery-lib-text-recognition-chinese",
         "gallery-lib-baselib",
         "gallery-lib-documentfile",
         "imageeditlibrary",
         "gallery-lib-photoView",
+
+        // ML Kit 文字识别(中文) 依赖链, 见上方模块定义
+        "mlkit-text-recognition-chinese",
+        "mlkit-text-recognition-bundled-common",
+        "mlkit-play-services-text-recognition-common",
+        "mlkit-play-services-text-recognition-chinese",
+        "mlkit-vision-common",
+        "mlkit-vision-interfaces",
+        "mlkit-common",
+        "mlkit-play-services-tasks",
+        "mlkit-play-services-base",
+        "mlkit-play-services-basement",
+        "mlkit-odml-image",
+        "mlkit-firebase-components",
+        "mlkit-firebase-annotations",
+        "mlkit-firebase-encoders",
+        "mlkit-firebase-encoders-json",
+        "mlkit-transport-api",
+        "mlkit-transport-runtime",
+        "mlkit-transport-backend-cct",
+        "mlkit-javax-inject",
     ],
     manifest: "app/src/main/AndroidManifest.xml",
+
+    // ★ 关键: ML Kit 的 .so 来自 AAR(text-recognition-bundled-common, extract_jni 抽出来的),
+    // 系统 app 默认 shouldEmbedJnis() == false, Soong 只会为 AAR 抽出的 jni 包建一个
+    // 指向 /system_ext/lib64 的软链, 并不会真的把 .so 装进去, 也不会打进 APK,
+    // 运行时就是: UnsatisfiedLinkError: dlopen failed:
+    //            library "libmlkit_google_ocr_pipeline.so" not found
+    // 打开这个开关后, .so 会以未压缩方式打进 APK, manifest 自动带上
+    // android:extractNativeLibs="false", 由 linker 直接从 APK 里 mmap 加载。
+    use_embedded_native_libs: true,
 
     platform_apis: true,
     system_ext_specific: true,
     certificate: "platform",
     privileged: true,
-    required: [
-        "privapp_whitelist_com.android.settings",
-    ],
+    jni_libs: ["libmlkit_google_ocr_pipeline"],
+
     optimize: {
         enabled: false,
     },
