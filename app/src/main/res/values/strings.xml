@@ -56,10 +56,6 @@
     </string>
 
 
-
-    <string name="tab_time_line">"      Time Line       "</string>
-    <string name="tab_picture">"        Photo       "</string>
-    <string name="tab_video">"      Video       "</string>
     <string name="share">Share</string>
     <string name="delete">delete</string>
     <string name="select_all">all</string>

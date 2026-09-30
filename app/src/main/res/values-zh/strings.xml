@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">图库</string>
     <string name="menu_timeline">时间轴</string>
     <string name="menu_picture">图片</string>
     <string name="menu_video">视频</string>
@@ -44,4 +45,31 @@
     <string name="deselect_all">取消全选</string>
     <string name="ok">确定</string>
     <string name="cancel">取消</string>
+    
+    <string name="edit">编辑</string>
+    <string name="rotate">旋转</string>
+    <string name="is_delete">是否删除?</string>
+    <string name="is_set_wallpaper">确定设置为壁纸?</string>
+    <string name="details">详情</string>
+    <string name="ocr">文字识别</string>
+    <string name="collect">收藏</string>
+    <string name="can_not_choose_empty">请选择一张图片</string>
+    <string name="can_not_choose_too_more">请选择不大于9张</string>
+    <string name="more">更多</string>
+    <string name="set_wallpage">设置壁纸</string>
+    <string name="set_wallpage_lock">设置锁屏</string>
+    <string name="set_wallpage_success">设置壁纸成功</string>
+
+    <string name="notification_image_saved">图片保存</string>
+    <string name="notification_image_saved_click_to_preview">图片已保存。点击预览。</string>
+
+    <string name="menu_download">下载</string>
+    <string name="not_pic">没有可选图片</string>
+    <string name="show_pic_tips">此处只展示宽度>799且高度>599的图片，如果要选择其它图片请去图库设置</string>
+    <string name="set_pic_tips">壁纸比较大，需要设置时间可能有点长</string>
+    <string name="no_more_pic">没有更多图片</string>
+    <string name="is_first_pic">已经是第一张</string>
+    <string name="open">打开</string>
+    <string name="exit">关闭</string>
+    <string name="no_text">无识别到文字</string>
 </resources>
