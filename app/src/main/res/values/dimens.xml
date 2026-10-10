@@ -24,6 +24,6 @@
     <!-- Left side navigation -->
     <dimen name="left_width">232dp</dimen>
     <dimen name="side_search_height">38dp</dimen>
-    <dimen name="side_search_radius">19dp</dimen>
+    <dimen name="side_search_radius">8dp</dimen>
     <dimen name="side_item_icon_size">20dp</dimen>
 </resources>

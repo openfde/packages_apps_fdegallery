@@ -287,6 +287,7 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
 
         if(isShow){
             DeviceUtils.setBottomMargin(recyclerView, DeviceUtils.dpToPx(context, 0));
+            updateCollectButtonState();
         }else {
             DeviceUtils.setBottomMargin(recyclerView, DeviceUtils.dpToPx(context, 50));
         }
@@ -328,6 +329,40 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         if (anySelected != isShowBottomBtn) {
             showOrHideBottomBtn(anySelected);
         }
+    }
+
+    /**
+     * 选中项都已收藏时，收藏按钮显示已收藏图标
+     */
+    private void updateCollectButtonState() {
+        if (txtCollect == null) {
+            return;
+        }
+        boolean hasSelected = false;
+        boolean allFavorite = true;
+        for (int i = 0; i < list.size(); i++) {
+            Multimedia picture = list.get(i);
+            if (picture.isSelected()) {
+                hasSelected = true;
+                if (!FavoriteStore.isFavorite(context, picture.getPath())) {
+                    allFavorite = false;
+                    break;
+                }
+            }
+        }
+        boolean favorite = hasSelected && allFavorite;
+        Drawable drawableTop = context.getDrawable(
+                favorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        drawableTop.setBounds(
+                0,
+                0,
+                drawableTop.getIntrinsicWidth(),
+                drawableTop.getIntrinsicHeight());
+        txtCollect.setCompoundDrawables(
+                null,
+                drawableTop,
+                null,
+                null);
     }
 
     private void clearAllSelection() {
@@ -486,6 +521,8 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
             baseFragment.showShortToast(
                     context.getString(R.string.favorite_added_count, count));
 
+            updateCollectButtonState();
+
         } else if (id == R.id.txtAllSelected) {
 
             isAllSelected = !isAllSelected;
@@ -521,6 +558,7 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
                     null);
 
             updateBottomBarBySelection();
+            updateCollectButtonState();
 
         } else if (id == R.id.txtCancel) {
 

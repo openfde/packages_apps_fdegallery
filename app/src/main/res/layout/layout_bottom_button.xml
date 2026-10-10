@@ -48,7 +48,7 @@
             style="@style/list_bottom_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableTop="@drawable/ic_favorite"
+            android:drawableTop="@drawable/ic_favorite_border"
             android:text="@string/favorite" />
     </LinearLayout>
 
