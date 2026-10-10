@@ -124,6 +124,13 @@ class MainActivity : AppCompatActivity() {
                     R.id.nav_video,
                     R.id.nav_timeline,
                     R.id.nav_collection,
+                    R.id.nav_category_portrait,
+                    R.id.nav_category_landscape,
+                    R.id.nav_category_animal,
+                    R.id.nav_category_food,
+                    R.id.nav_category_plant,
+                    R.id.nav_category_architecture,
+                    R.id.nav_category_vehicle,
                     R.id.nav_trash,
                     R.id.nav_search,
                     R.id.nav_settings

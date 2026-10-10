@@ -26,6 +26,41 @@
             android:title="@string/menu_collection" />
 
         <item
+            android:id="@+id/nav_category_portrait"
+            android:icon="@drawable/ic_cat_portrait"
+            android:title="@string/category_portrait" />
+
+        <item
+            android:id="@+id/nav_category_landscape"
+            android:icon="@drawable/ic_cat_landscape"
+            android:title="@string/category_landscape" />
+
+<!--        <item-->
+<!--            android:id="@+id/nav_category_animal"-->
+<!--            android:icon="@drawable/ic_cat_animal"-->
+<!--            android:title="@string/category_animal" />-->
+
+        <item
+            android:id="@+id/nav_category_food"
+            android:icon="@drawable/ic_cat_food"
+            android:title="@string/category_food" />
+
+<!--        <item-->
+<!--            android:id="@+id/nav_category_plant"-->
+<!--            android:icon="@drawable/ic_cat_plant"-->
+<!--            android:title="@string/category_plant" />-->
+
+<!--        <item-->
+<!--            android:id="@+id/nav_category_architecture"-->
+<!--            android:icon="@drawable/ic_cat_building"-->
+<!--            android:title="@string/category_architecture" />-->
+
+<!--        <item-->
+<!--            android:id="@+id/nav_category_vehicle"-->
+<!--            android:icon="@drawable/ic_cat_vehicle"-->
+<!--            android:title="@string/category_vehicle" />-->
+
+        <item
             android:id="@+id/nav_trash"
             android:icon="@drawable/ic_trash"
             android:title="@string/menu_trash" />
@@ -33,6 +68,6 @@
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings_black_24dp"
-            android:title="@string/menu_settings" />
+            android:title="@string/menu_about" />
     </group>
 </menu>

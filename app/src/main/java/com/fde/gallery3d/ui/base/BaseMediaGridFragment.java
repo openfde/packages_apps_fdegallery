@@ -44,11 +44,10 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
 
     protected final List<Multimedia> mediaList = new ArrayList<>();
 
-    private View emptyView;
-    private TextView txtEmpty;
+    protected View emptyView;
+    protected TextView txtEmpty;
     private GridLayoutManager layoutManager;
     private View.OnLayoutChangeListener layoutChangeListener;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,

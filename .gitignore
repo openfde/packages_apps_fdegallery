@@ -16,4 +16,5 @@
 .cxx
 local.properties
 *.txt
+!app/src/main/assets/imagenet_labels.txt
 .idea/

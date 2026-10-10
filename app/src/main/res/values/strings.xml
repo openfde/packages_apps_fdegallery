@@ -15,6 +15,7 @@
     <string name="menu_trash">Trash</string>
     <string name="menu_search">Search</string>
     <string name="menu_preview">Preview</string>
+    <string name="menu_about">About</string>
     <string name="back">Back</string>
     <string name="search_hint">Search photos &amp; videos</string>
     <string name="search_clear">Clear</string>
@@ -43,6 +44,17 @@
     <string name="favorite_count">%1$d item(s)</string>
     <string name="about_app">OpenFDE Gallery</string>
     <string name="about_version">Version %1$s</string>
+
+    <string name="category_portrait">Portrait</string>
+    <string name="category_landscape">Landscape</string>
+    <string name="category_animal">Animals</string>
+    <string name="category_food">Food</string>
+    <string name="category_plant">Plants</string>
+    <string name="category_architecture">Architecture</string>
+    <string name="category_vehicle">Vehicles</string>
+    <string name="category_other">Other</string>
+    <string name="category_count">%1$d photo(s)</string>
+    <string name="empty_category">No photos in this category yet</string>
 
     <string name="lorem_ipsum_title">Lorem Ipsum"</string>
     <string name="lorem_ipsum">Lorem Ipsum is simply placeholder text of the printing and

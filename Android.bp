@@ -22,6 +22,18 @@ android_library_import {
 }
 
 android_library_import {
+    name: "gallery-lib-tensorflow-lite",
+    aars: ["app/libs/tensorflow-lite-2.16.1.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
+    name: "gallery-lib-tensorflow-lite-api",
+    aars: ["app/libs/tensorflow-lite-api-2.16.1.aar"],
+    sdk_version: "current",
+}
+
+android_library_import {
     name: "gallery-lib-exoplayer-v2-core",
     aars: ["app/libs/exoplayer-core-2.10.1.aar"],
     sdk_version: "current",
@@ -87,6 +99,9 @@ android_app {
     resource_dirs: [
         "app/src/main/res",
     ],
+    asset_dirs: [
+        "app/src/main/assets",
+    ],
     static_libs: [
         "androidx.core_core-ktx", 
         "androidx.lifecycle_lifecycle-runtime-ktx",
@@ -115,6 +130,8 @@ android_app {
         "gallery-lib-exoplayer",
         "gallery-lib-exoplayer-v2-core",
         "gallery-lib-exoplayer-v2-ui",
+        "gallery-lib-tensorflow-lite",
+        "gallery-lib-tensorflow-lite-api",
         "gallery-lib-glide",
         "gallery-lib-gif_decoder",
         "gallery-lib-disklrucache",

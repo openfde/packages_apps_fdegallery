@@ -19,6 +19,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // 需要支持的 ABI（含 arm64-v8a）
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
     }
 
     buildTypes {
@@ -34,6 +39,9 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+    androidResources {
+        noCompress += listOf("tflite")
     }
 }
 
@@ -62,5 +70,7 @@ dependencies {
     implementation(files("libs/exoplayer-core-2.10.1.aar"))
     implementation(files("libs/exoplayer-ui-2.10.1.aar"))
     implementation(files("libs/exoplayer-r1.5.16.aar"))
+    implementation(files("libs/tensorflow-lite-2.16.1.aar"))
+    implementation(files("libs/tensorflow-lite-api-2.16.1.aar"))
     implementation(files("../imageeditlibrary/libs/PhotoView-2.3.0.aar"))
 }

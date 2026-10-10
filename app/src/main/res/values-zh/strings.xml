@@ -8,6 +8,7 @@
     <string name="menu_collection">收藏</string>
     <string name="menu_trash">回收站</string>
     <string name="menu_search">搜索</string>
+    <string name="menu_about">关于</string>
     <string name="menu_preview">图片预览</string>
     <string name="back">返回</string>
 
@@ -38,6 +39,17 @@
     <string name="favorite_count">共 %1$d 项</string>
     <string name="about_app">OpenFDE 图库</string>
     <string name="about_version">版本 %1$s</string>
+
+    <string name="category_portrait">人像</string>
+    <string name="category_landscape">风景</string>
+    <string name="category_animal">动物</string>
+    <string name="category_food">美食</string>
+    <string name="category_plant">植物</string>
+    <string name="category_architecture">建筑</string>
+    <string name="category_vehicle">车辆</string>
+    <string name="category_other">其他</string>
+    <string name="category_count">共 %1$d 张</string>
+    <string name="empty_category">该分类下暂无图片</string>
 
     <string name="share">分享</string>
     <string name="delete">删除</string>

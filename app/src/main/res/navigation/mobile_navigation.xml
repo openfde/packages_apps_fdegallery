@@ -31,6 +31,83 @@
         tools:layout="@layout/fragment_media_grid" />
 
     <fragment
+        android:id="@+id/nav_category_portrait"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_portrait"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="PORTRAIT" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_landscape"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_landscape"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="LANDSCAPE" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_animal"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_animal"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="ANIMAL" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_food"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_food"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="FOOD" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_plant"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_plant"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="PLANT" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_architecture"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_architecture"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="ARCHITECTURE" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_category_vehicle"
+        android:name="com.fde.gallery3d.ui.category.CategoryFragment"
+        android:label="@string/category_vehicle"
+        tools:layout="@layout/fragment_media_grid">
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="VEHICLE" />
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_trash"
         android:name="com.fde.gallery3d.ui.trash.TrashFragment"
         android:label="@string/menu_trash"
