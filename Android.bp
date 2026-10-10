@@ -88,6 +88,17 @@ android_library_import {
     sdk_version: "current",
 }
 
+cc_prebuilt_library_shared {
+    name: "libtensorflowlite_jni",
+    owner: "your_team",
+    srcs: ["app/libs/arm64-v8a/libtensorflowlite_jni.so"],
+    compile_multilib: "64",
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
 android_app {
     name: "FdeGallery",
     srcs: [
@@ -152,6 +163,9 @@ android_app {
     privileged: true,
     required: [
         "privapp_whitelist_com.android.settings",
+    ],
+    jni_libs: [
+        "libtensorflowlite_jni",
     ],
     optimize: {
         enabled: false,

@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * 本机 TFLite 图片分类器：内置免费的 MobileNet V2 浮点模型，
- * 输入 224x224x3 的 float32 像素（0~1），输出 1001 个 ImageNet 类别置信度。
+ * 输入 224x224x3 的 float32 像素（归一化到 -1~1），输出 1001 个 ImageNet 类别置信度。
  * <p>
  * 注：不使用 uint8 量化模型。量化模型的卷积核在 aarch64 上会用到 dot-product
  * （sdot）等指令，某些 ARM 环境并不支持会触发 SIGILL 闪退，浮点模型只用
@@ -186,9 +186,9 @@ public class ImageClassifier {
         bitmap.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE);
         buffer.rewind();
         for (int pixel : pixels) {
-            buffer.put(((pixel >> 16) & 0xff) / 255.0f);
-            buffer.put(((pixel >> 8) & 0xff) / 255.0f);
-            buffer.put((pixel & 0xff) / 255.0f);
+            buffer.put(((pixel >> 16) & 0xff) / 127.5f - 1.0f);
+            buffer.put(((pixel >> 8) & 0xff) / 127.5f - 1.0f);
+            buffer.put((pixel & 0xff) / 127.5f - 1.0f);
         }
     }
 
