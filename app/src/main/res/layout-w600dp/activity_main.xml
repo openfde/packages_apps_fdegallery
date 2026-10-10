@@ -22,13 +22,40 @@ across the layout configurations
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.google.android.material.navigation.NavigationView
-            android:id="@+id/nav_view"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="@dimen/left_width"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header_main"
-            app:menu="@menu/navigation_drawer" />
+            android:orientation="vertical"
+            android:paddingTop="16dp">
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                app:itemIconTint="@color/nav_item_icon"
+                app:itemTextColor="@color/nav_item_text"
+                app:menu="@menu/navigation_drawer" />
+
+            <!-- 智能图册：可展开的二级菜单 -->
+            <com.fde.gallery3d.ui.view.SmartAlbumMenuView
+                android:id="@+id/smart_album_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp" />
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_view_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                app:itemIconTint="@color/nav_item_icon"
+                app:itemTextColor="@color/nav_item_text"
+                app:menu="@menu/navigation_drawer_bottom" />
+        </LinearLayout>
     </androidx.drawerlayout.widget.DrawerLayout>
 </FrameLayout>

@@ -71,12 +71,11 @@
 
         </LinearLayout>
 
-        <!-- 导航菜单 -->
+        <!-- 导航菜单（上部：图片 / 视频 / 时间轴 / 收藏） -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_view"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
@@ -89,6 +88,32 @@
             app:itemTextAppearance="@style/SideNavText"
             app:itemTextColor="@color/nav_item_text"
             app:menu="@menu/navigation_drawer" />
+
+        <!-- 智能图册：可展开的二级菜单 -->
+        <com.fde.gallery3d.ui.view.SmartAlbumMenuView
+            android:id="@+id/smart_album_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- 导航菜单（下部：回收站 / 设置） -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:visibility="visible"
+            app:itemBackground="@drawable/bg_nav_item"
+            app:itemHorizontalPadding="14dp"
+            app:itemIconPadding="14dp"
+            app:itemIconSize="@dimen/side_item_icon_size"
+            app:itemIconTint="@color/nav_item_icon"
+            app:itemTextAppearance="@style/SideNavText"
+            app:itemTextColor="@color/nav_item_text"
+            app:menu="@menu/navigation_drawer_bottom" />
 
         <View
             android:layout_width="match_parent"

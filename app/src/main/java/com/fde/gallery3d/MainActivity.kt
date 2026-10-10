@@ -27,6 +27,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -42,6 +43,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.fde.gallery3d.ui.search.SearchState
 import com.fde.gallery3d.ui.utils.LogTools
+import com.fde.gallery3d.ui.view.SmartAlbumMenuView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
@@ -57,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private var viewDivider: View? = null
     private var materialToolbar: MaterialToolbar? = null
     private var captionText: TextView? = null
+    private var smartAlbumMenu: SmartAlbumMenuView? = null
 
     private val searchHandler = Handler(Looper.getMainLooper())
 
@@ -72,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         layoutBrand = findViewById(R.id.layout_brand)
         materialToolbar = findViewById(R.id.materialToolbar)
         captionText = findViewById(R.id.caption_text)
+        smartAlbumMenu = findViewById(R.id.smart_album_menu)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -114,10 +118,11 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
 
-        val navView = findViewById<NavigationView>(R.id.nav_view)
+        val navViewTop = findViewById<NavigationView>(R.id.nav_view)
+        val navViewBottom = findViewById<NavigationView>(R.id.nav_view_bottom)
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
 
-        if (navView != null) {
+        if (navViewTop != null || navViewBottom != null) {
             appBarConfiguration = AppBarConfiguration(
                 setOf(
                     R.id.nav_picture,
@@ -139,7 +144,18 @@ class MainActivity : AppCompatActivity() {
             )
 
             setupActionBarWithNavController(navController, appBarConfiguration)
-            navView.setupWithNavController(navController)
+            navViewTop?.setupWithNavController(navController)
+            navViewBottom?.setupWithNavController(navController)
+        }
+
+        smartAlbumMenu?.let { albumMenu ->
+            albumMenu.onCategorySelected = { destinationId ->
+                navController.navigate(destinationId)
+                drawerLayout?.closeDrawer(GravityCompat.START, true)
+            }
+            navController.addOnDestinationChangedListener { _, destination, _ ->
+                albumMenu.setChecked(destination.id)
+            }
         }
 
         val bottomNavView =
