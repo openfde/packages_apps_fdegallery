@@ -35,6 +35,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -150,7 +151,18 @@ class MainActivity : AppCompatActivity() {
 
         smartAlbumMenu?.let { albumMenu ->
             albumMenu.onCategorySelected = { destinationId ->
-                navController.navigate(destinationId)
+                // 分类目的地与抽屉顶级菜单同级：进入前先回弹到起始页，避免图册分类
+                // 叠加在其它顶级页之上，导致再次点击图片/收藏时被 saveState/restoreState
+                // 恢复成智能图册分类页。
+                val navOptions = NavOptions.Builder()
+                    .setLaunchSingleTop(true)
+                    .setPopUpTo(
+                        navController.graph.findStartDestination().id,
+                        inclusive = false,
+                        saveState = true
+                    )
+                    .build()
+                navController.navigate(destinationId, null, navOptions)
                 drawerLayout?.closeDrawer(GravityCompat.START, true)
             }
             navController.addOnDestinationChangedListener { _, destination, _ ->
