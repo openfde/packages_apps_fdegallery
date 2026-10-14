@@ -72,6 +72,13 @@
     <string name="set_wallpage">设置壁纸</string>
     <string name="set_wallpage_lock">设置锁屏</string>
     <string name="set_wallpage_success">设置壁纸成功</string>
+    <string name="set_wallpage_failed">设置壁纸失败</string>
+    <string name="wallpaper_scale_stretch">拉伸</string>
+    <string name="wallpaper_scale_center">居中</string>
+    <string name="wallpaper_scale_center_crop">居中裁剪</string>
+    <string name="wallpaper_scale_fit">等比适应</string>
+    <string name="wallpaper_scale_tile">平铺</string>
+    <string name="wallpaper_scale_title">选择壁纸显示方式</string>
 
     <string name="notification_image_saved">图片保存</string>
     <string name="notification_image_saved_click_to_preview">图片已保存。点击预览。</string>

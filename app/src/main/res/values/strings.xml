@@ -88,6 +88,13 @@
     <string name="set_wallpage">set wallpaper</string>
     <string name="set_wallpage_lock">set wallpaper lock</string>
     <string name="set_wallpage_success">set wallpaper success</string>
+    <string name="set_wallpage_failed">set wallpaper failed</string>
+    <string name="wallpaper_scale_stretch">Stretch</string>
+    <string name="wallpaper_scale_center">Center</string>
+    <string name="wallpaper_scale_center_crop">Center crop</string>
+    <string name="wallpaper_scale_fit">Fit</string>
+    <string name="wallpaper_scale_tile">Tile</string>
+    <string name="wallpaper_scale_title">Set wallpaper</string>
 
     <string name="notification_image_saved">Image saved</string>
     <string name="notification_image_saved_click_to_preview">Image saved. Click to preview.</string>

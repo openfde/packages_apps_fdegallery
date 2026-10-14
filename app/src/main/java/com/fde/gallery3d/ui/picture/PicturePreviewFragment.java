@@ -763,17 +763,29 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
     }
 
     private void setSetWallpage() {
+        if (context == null || picturePreviewPersenter == null) {
+            return;
+        }
         try {
+            final CharSequence[] items = new CharSequence[]{
+                    getString(R.string.wallpaper_scale_stretch),
+                    getString(R.string.wallpaper_scale_center),
+                    getString(R.string.wallpaper_scale_center_crop),
+                    getString(R.string.wallpaper_scale_fit),
+                    getString(R.string.wallpaper_scale_tile)
+            };
+            // 5 个选项的索引与 PicturePreviewPersenter 的 WALLPAPER_SCALE_* 常量一一对应
             AlertDialog.Builder builder = new AlertDialog.Builder(
                     context, com.fde.imageeditlibrary.R.style.RoundedAlertDialog);
-            builder.setTitle(R.string.is_set_wallpaper);
-            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            builder.setTitle(R.string.wallpaper_scale_title);
+            builder.setItems(items, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    final int scaleMode = which;
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            picturePreviewPersenter.setWallpage(1);
+                            picturePreviewPersenter.setWallpage(1, scaleMode);
                         }
                     }).start();
                 }
