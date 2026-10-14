@@ -34,6 +34,8 @@
     <color name="app_black">#000000</color>
     <color name="app_white">#ffffff</color>
     <color name="app_black_light">#333333</color>
+    <color name="app_bg_floating">#ffffff</color>
+    <color name="file_controller_bg">#C7F7F7F7</color>
     <color name="app_gray_dark">#666666</color>
     <color name="app_gray">#999999</color>
     <color name="app_gray_light">#f2f2f2</color>
@@ -107,4 +109,9 @@
     <color name="media_placeholder">#EFEFEF</color>
     <color name="scrim_black_60">#99000000</color>
     <color name="badge_gold">#F5A623</color>
+
+    <!-- Scroll bar -->
+    <color name="scrollbar_track">#f2f2f2</color>
+    <color name="scrollbar_thumb">#999999</color>
+    <color name="scrollbar_thumb_pressed">#40000000</color>
 </resources>

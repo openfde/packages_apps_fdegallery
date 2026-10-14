@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Background colors (dark), mirror DocumentsUI dark palette -->
+
+    <!-- Page / surface backgrounds -->
+    <color name="mainbg">#202124</color>
+    <color name="app_white">#202124</color>
+    <color name="main_bg">#202124</color>
+    <color name="app_white_gray">#202124</color>
+    <color name="app_gray_white_light">#2D2D30</color>
+    <color name="app_gray_light">#3C4043</color>
+    <color name="media_placeholder">#2D2D30</color>
+    <color name="bg_circle">#3C4043</color>
+    <color name="bg_grep_circle">#5F6368</color>
+    <color name="find_questions_reply_list_bg">#2D2D30</color>
+    <color name="bg_filter_button">#3C4043</color>
+
+    <!-- Divider / line colors -->
+    <color name="linebg">#5F6368</color>
+    <color name="draw_line_color">#5F6368</color>
+    <color name="table_line_color">#5F6368</color>
+    <color name="inner_line_color">#5F6368</color>
+    <color name="outside_line_color">#5F6368</color>
+    <color name="find_questions_details_img_edge">#5F6368</color>
+    <color name="edit_bottom_color">#5F6368</color>
+    <color name="feedback_date_text">#99FFFFFF</color>
+
+    <!-- Text colors -->
+    <color name="dark_text">#E8EAED</color>
+    <color name="app_black_light">#E8EAED</color>
+    <color name="medium_text">#B3FFFFFF</color>
+    <color name="medium_grep_text">#B3FFFFFF</color>
+    <color name="light_text">#99FFFFFF</color>
+    <color name="app_gray_dark">#B3FFFFFF</color>
+    <color name="app_gray_white">#99FFFFFF</color>
+    <color name="scale_color">#B3FFFFFF</color>
+    <color name="side_text">#E8EAED</color>
+    <color name="side_search_hint">#9AA0A6</color>
+
+    <!-- Left side navigation -->
+    <color name="side_bg">#26262A</color>
+    <color name="side_divider">#5F6368</color>
+    <color name="side_item_selected_bg">#3D8AB4F8</color>
+    <color name="side_item_pressed_bg">#3C4043</color>
+    <color name="side_search_stroke">#5F6368</color>
+
+    <!-- Floating surfaces: bottom sheet, toolbar, preview background -->
+    <color name="app_bg_floating">#3C4043</color>
+    <color name="file_controller_bg">#993C4043</color>
+
+    <!-- Scroll bar -->
+    <color name="scrollbar_track">#2D2D30</color>
+    <color name="scrollbar_thumb">#6B6B6B</color>
+    <color name="scrollbar_thumb_pressed">#40FFFFFF</color>
+</resources>

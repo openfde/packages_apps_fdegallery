@@ -3,7 +3,6 @@ package com.fde.gallery3d
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
 import android.net.Uri
@@ -85,8 +84,8 @@ class MainActivity : AppCompatActivity() {
         setCaptionTitle(getString(R.string.app_name))
         setTitle(R.string.app_name)
 
-        val colorStateList = ColorStateList.valueOf(R.color.app_black).withAlpha(255)
-        materialToolbar?.setTitleTextColor(colorStateList)
+        val titleColor = ContextCompat.getColor(this, R.color.dark_text)
+        materialToolbar?.setTitleTextColor(titleColor)
 
         triggerSystemMediaScan();
 

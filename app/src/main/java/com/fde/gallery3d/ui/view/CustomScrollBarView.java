@@ -1,12 +1,14 @@
 package com.fde.gallery3d.ui.view;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.fde.gallery3d.R;
 
 public class CustomScrollBarView extends View {
     private Paint trackPaint;
@@ -18,9 +20,6 @@ public class CustomScrollBarView extends View {
     private float lastY;
     private OnScrollChangeListener listener;
 
-    private final String color_normal = "#FF999999";
-    private final String color_scroll = "#40000000";
-
     public interface OnScrollChangeListener {
         void onScroll(float progress);
     }
@@ -31,11 +30,12 @@ public class CustomScrollBarView extends View {
     }
 
     private void init() {
+        Resources.Theme theme = getContext().getTheme();
         trackPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        trackPaint.setColor(Color.parseColor("#f2f2f2"));
+        trackPaint.setColor(getResources().getColor(R.color.scrollbar_track, theme));
 
         thumbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        thumbPaint.setColor(Color.parseColor(color_normal));
+        thumbPaint.setColor(getResources().getColor(R.color.scrollbar_thumb, theme));
     }
 
     @Override
@@ -57,7 +57,8 @@ public class CustomScrollBarView extends View {
                 lastY = event.getY();
                 return true;
             case MotionEvent.ACTION_UP:
-                thumbPaint.setColor(Color.parseColor(color_normal));
+                thumbPaint.setColor(getResources().getColor(
+                        R.color.scrollbar_thumb, getContext().getTheme()));
                 invalidate();
                 return true;
 
@@ -66,7 +67,8 @@ public class CustomScrollBarView extends View {
                 lastY = event.getY();
                 thumbTop += dy;
                 limitThumb();
-                thumbPaint.setColor(Color.parseColor(color_scroll));
+                thumbPaint.setColor(getResources().getColor(
+                        R.color.scrollbar_thumb_pressed, getContext().getTheme()));
                 invalidate();
                 notifyProgress();
                 return true;

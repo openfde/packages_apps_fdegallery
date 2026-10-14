@@ -63,7 +63,7 @@
                             android:id="@+id/txtScale"
                             android:text="100%"
                             android:textSize="12sp"
-                            android:textColor="#707070"
+                            android:textColor="@color/medium_text"
                             android:gravity="center"
                             android:visibility="visible"
                             android:focusable="false"
