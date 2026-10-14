@@ -302,9 +302,16 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         List<Multimedia> tempList = FileUtils.getAllImages(context);
 
         if (fromArgs != null) {
-            String path = SPUtils.getUserInfo(context, "curPicPath");
-            Multimedia media = findPicture(tempList, path);
-            picture = media != null ? media : fromArgs;
+            // 以列表点击传入的图片为准，避免被上次预览遗留的 curPicPath 带偏
+            //（智能图册等人像/风景分类页不会更新 curPicPath，直接读取会导致打开错误的图片）。
+            if (!TextUtils.isEmpty(fromArgs.getPath())) {
+                picture = fromArgs;
+                SPUtils.putUserInfo(context, "curPicPath", fromArgs.getPath());
+            } else {
+                String path = SPUtils.getUserInfo(context, "curPicPath");
+                Multimedia media = findPicture(tempList, path);
+                picture = media != null ? media : fromArgs;
+            }
             picturePreviewPersenter = new PicturePreviewPersenter(this, picture);
             initData();
             return;
