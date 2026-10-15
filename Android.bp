@@ -99,6 +99,68 @@ cc_prebuilt_library_shared {
     check_elf_files: false,
 }
 
+// Tesseract4Android 的 jni 从 AAR 中单独拆出（AAR import 不会安装 native 库），
+// 供 TessBaseAPI 运行时加载 libtesseract / libleptonica / libpngx / libjpeg。
+cc_prebuilt_library_shared {
+    name: "libtesseract",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libtesseract.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libtesseract.so"] },
+        x86: { srcs: ["app/libs/x86/libtesseract.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libtesseract.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libleptonica",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libleptonica.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libleptonica.so"] },
+        x86: { srcs: ["app/libs/x86/libleptonica.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libleptonica.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libpngx",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libpngx.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libpngx.so"] },
+        x86: { srcs: ["app/libs/x86/libpngx.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libpngx.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libjpeg",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libjpeg.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libjpeg.so"] },
+        x86: { srcs: ["app/libs/x86/libjpeg.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libjpeg.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
 android_app {
     name: "FdeGallery",
     srcs: [
@@ -166,6 +228,10 @@ android_app {
     ],
     jni_libs: [
         "libtensorflowlite_jni",
+        "libtesseract",
+        "libleptonica",
+        "libpngx",
+        "libjpeg",
     ],
     optimize: {
         enabled: false,
