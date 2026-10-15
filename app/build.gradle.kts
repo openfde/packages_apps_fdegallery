@@ -50,6 +50,8 @@ android {
     }
 }
 
+
+
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
@@ -64,18 +66,24 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 
-//    compileOnly(files("libs/exoplayer-core-2.10.1.aar"))
-//    compileOnly(files("libs/exoplayer-r1.5.16.aar"))
-//    compileOnly(files("libs/exoplayer-ui-2.10.1.aar"))
     api(project(":imageeditlibrary"))
     implementation(files("libs/baselib.aar"))
     implementation("com.github.bumptech.glide:glide:5.0.4")
     implementation("com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14")
-    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
+    // 离线 OCR：Tesseract4Android（Tesseract 4 LSTM）本地 AAR，
+    // 替换在目标设备上无法识别（blockCount=0）的 ML Kit gOCR。
+    // 注意：不再保留任何 com.google.mlkit:text-recognition* 依赖——
+    // 它们复用同一条 gOCR 原生管线（libmlkit_google_ocr_pipeline.so），
+    // 在本设备（ARM64 仿真谎报 dotprod/fp16）上同样返回 0 个文本块。
+    implementation(files("libs/tesseract4android-4.8.0.aar"))
     implementation(files("libs/exoplayer-core-2.10.1.aar"))
     implementation(files("libs/exoplayer-ui-2.10.1.aar"))
     implementation(files("libs/exoplayer-r1.5.16.aar"))
     implementation(files("libs/tensorflow-lite-2.16.1.aar"))
     implementation(files("libs/tensorflow-lite-api-2.16.1.aar"))
     implementation(files("../imageeditlibrary/libs/PhotoView-2.3.0.aar"))
+
+    implementation("com.google.firebase:firebase-functions:22.1.0")
+    implementation("com.google.code.gson:gson:2.8.6")
 }
+

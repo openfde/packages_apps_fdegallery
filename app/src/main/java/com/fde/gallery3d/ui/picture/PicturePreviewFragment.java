@@ -64,6 +64,7 @@ import com.fde.baselib.Animation.AnimFactory;
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.PicturePreviewActivity;
 import com.fde.gallery3d.ui.PicturePreviewPersenter;
+import com.fde.gallery3d.ui.ai.TesseractOcr;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.favorite.FavoriteStore;
@@ -752,10 +753,28 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         } else if (id == R.id.txtOcr) {
 
             editOcrText.setVisibility(View.VISIBLE);
+            editOcrText.setText("");
 
-            Multimedia curPicture = picturePreviewPersenter.getCurPic();
+            final Multimedia curPicture = picturePreviewPersenter.getCurPic();
             if (curPicture != null) {
-                BitmapFactory.decodeFile(curPicture.getPath());
+                // Tesseract 初始化/识别较耗时，放后台线程，避免卡 UI
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TesseractOcr ocr = TesseractOcr.getInstance(context);
+                        final String text = ocr.recognize(curPicture.getPath());
+                        runOnUi(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (TextUtils.isEmpty(text)) {
+                                    editOcrText.setText(getString(R.string.no_text));
+                                } else {
+                                    editOcrText.setText(text);
+                                }
+                            }
+                        });
+                    }
+                }).start();
             }
 
         } else if (id == R.id.txtDetails) {
