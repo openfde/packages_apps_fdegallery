@@ -71,8 +71,8 @@ android_library_import {
 }
 
 android_library_import {
-    name: "gallery-lib-text-recognition-chinese",
-    aars: ["app/libs/text-recognition-chinese-16.0.1.aar"],
+    name: "gallery-lib-tesseract4android",
+    aars: ["app/libs/tesseract4android-4.8.0.aar"],
     sdk_version: "current",
 }
 
@@ -90,7 +90,7 @@ android_library_import {
 
 cc_prebuilt_library_shared {
     name: "libtensorflowlite_jni",
-    owner: "your_team",
+    owner: "fde",
     srcs: ["app/libs/arm64-v8a/libtensorflowlite_jni.so"],
     compile_multilib: "64",
     strip: {
@@ -149,7 +149,7 @@ android_app {
         "androidx.annotation_annotation",
         "androidx.exifinterface_exifinterface",
         "gallery-lib-FFmpegMediaMetadataRetriever",
-        "gallery-lib-text-recognition-chinese",
+        "gallery-lib-tesseract4android",
         "gallery-lib-baselib",
         "gallery-lib-documentfile",
         "imageeditlibrary",
