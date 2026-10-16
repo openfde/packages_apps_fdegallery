@@ -72,6 +72,9 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     boolean isShowBottomBtn = false;
 
+    /** Shift 范围选择的锚点（最后一次普通单击 / Ctrl 单击的位置） */
+    private int anchorPos = -1;
+
     BaseFragment baseFragment;
 
     public VideoListPersenter(BaseFragment baseFragment, View view) {
@@ -212,12 +215,58 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     @Override
     public void onSelectEvent(int pos, int groupPos, boolean isSelect) {
+        onSelectEvent(pos, groupPos, isSelect, false, false);
+    }
+
+    @Override
+    public void onSelectEvent(int pos, int groupPos, boolean isSelect,
+                              boolean ctrlPressed, boolean shiftPressed) {
         try {
-            if (pos >= 0 && pos < list.size()) {
+            if (list == null || pos < 0 || pos >= list.size()) {
+                return;
+            }
+            if (ctrlPressed) {
+                // Ctrl 单击：只追加/取消当前项，不影响其它已选项
                 Multimedia video = list.get(pos);
-                video.setSelected(isSelect);
+                video.setSelected(!video.isSelected());
                 list.set(pos, video);
                 videoListAdapter.notifyItemChanged(pos);
+            } else if (shiftPressed) {
+                // Shift 单击：选中上次锚点到当前位置之间的所有项（范围选择）
+                int anchor = (anchorPos >= 0 && anchorPos < list.size()) ? anchorPos : pos;
+                int start = Math.min(anchor, pos);
+                int end = Math.max(anchor, pos);
+                boolean changed = false;
+                for (int i = start; i <= end; i++) {
+                    Multimedia video = list.get(i);
+                    if (!video.isSelected()) {
+                        video.setSelected(true);
+                        list.set(i, video);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    videoListAdapter.notifyItemRangeChanged(start, end - start + 1);
+                }
+            } else {
+                // 普通单击：取消其它所有选择，只选中当前项
+                boolean changed = false;
+                for (int i = 0; i < list.size(); i++) {
+                    Multimedia video = list.get(i);
+                    boolean shouldSelect = (i == pos);
+                    if (video.isSelected() != shouldSelect) {
+                        video.setSelected(shouldSelect);
+                        list.set(i, video);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    videoListAdapter.notifyDataSetChanged();
+                }
+            }
+            // 普通单击与 Ctrl 单击会重置 Shift 锚点，Shift 选择不移动锚点
+            if (!shiftPressed) {
+                anchorPos = pos;
             }
             updateBottomBarBySelection();
         } catch (Exception e) {

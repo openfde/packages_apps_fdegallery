@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -94,7 +95,22 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
 
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
-                        viewEvent.onSelectEvent(position, 0, !video.isSelected());
+                        // FDE 平台没有 InputEvent.isCtrlPressed()/isShiftPressed()，
+                        // 改用 metaState + KeyEvent 掩码判断修饰键
+                        int metaState = e.getMetaState();
+                        boolean ctrlPressed =
+                                (metaState & KeyEvent.META_CTRL_MASK) != 0;
+                        boolean shiftPressed =
+                                (metaState & KeyEvent.META_SHIFT_MASK) != 0;
+                        boolean targetState;
+                        if (ctrlPressed) {
+                            // Ctrl 单击：在当前选中状态上取反
+                            targetState = !video.isSelected();
+                        } else {
+                            // 普通单击 / Shift 单击：选中该项
+                            targetState = true;
+                        }
+                        viewEvent.onSelectEvent(position, 0, targetState, ctrlPressed, shiftPressed);
                         return true;
                     }
 
