@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  FdeGallery App Functions 静态描述（框架 legacy XML asset 格式，由系统 AppSearch 索引读取）。
+  供系统智能体（Agent）/ App Function 调用方检索本应用可执行的功能：
+    - openImage  打开指定路径的图片预览
+    - playVideo  播放指定路径的视频
+-->
+<appfunctions>
+    <appfunction>
+        <function_id>openImage</function_id>
+        <schema_name>openImage</schema_name>
+        <schema_version>1</schema_version>
+        <schema_category>media</schema_category>
+        <enabled_by_default>true</enabled_by_default>
+    </appfunction>
+    <appfunction>
+        <function_id>playVideo</function_id>
+        <schema_name>playVideo</schema_name>
+        <schema_version>1</schema_version>
+        <schema_category>media</schema_category>
+        <enabled_by_default>true</enabled_by_default>
+    </appfunction>
+</appfunctions>

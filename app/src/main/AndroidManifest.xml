@@ -135,6 +135,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!--
+        通过 App Functions 向系统智能体（Agent）暴露"打开图片预览 / 播放视频"能力，
+        功能定义见 assets/appfunctions.xml（openImage / playVideo）。
+        -->
+        <service
+            android:name=".appfunctions.MediaAppFunctionsService"
+            android:permission="android.permission.BIND_APP_FUNCTION_SERVICE"
+            android:exported="true">
+            <property
+                android:name="android.app.appfunctions"
+                android:value="appfunctions.xml" />
+            <intent-filter>
+                <action android:name="android.app.appfunctions.AppFunctionService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
