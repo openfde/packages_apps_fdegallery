@@ -161,6 +161,24 @@ cc_prebuilt_library_shared {
     check_elf_files: false,
 }
 
+// PhotoProcessing 的 JNI 库：imageeditlibrary 的 jniLibs 不会在 Soong 构建中被
+// 自动打包进 APK，需要拆出为 cc_prebuilt_library_shared 并在 jni_libs 中引用，
+// 否则 PhotoProcessing 加载 libphotoprocessing.so 时会抛 UnsatisfiedLinkError。
+cc_prebuilt_library_shared {
+    name: "libphotoprocessing",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["imageeditlibrary/src/main/jniLibs/armeabi-v7a/libphotoprocessing.so"] },
+        arm64: { srcs: ["imageeditlibrary/src/main/jniLibs/arm64-v8a/libphotoprocessing.so"] },
+        x86: { srcs: ["imageeditlibrary/src/main/jniLibs/x86/libphotoprocessing.so"] },
+        x86_64: { srcs: ["imageeditlibrary/src/main/jniLibs/x86_64/libphotoprocessing.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
 android_app {
     name: "FdeGallery",
     srcs: [
@@ -232,6 +250,7 @@ android_app {
         "libleptonica",
         "libpngx",
         "libjpeg",
+        "libphotoprocessing",
     ],
     optimize: {
         enabled: false,
