@@ -2,8 +2,13 @@
 <!--
   FdeGallery App Functions 静态描述（框架 legacy XML asset 格式，由系统 AppSearch 索引读取）。
   供系统智能体（Agent）/ App Function 调用方检索本应用可执行的功能：
-    - openImage  打开指定路径的图片预览
-    - playVideo  播放指定路径的视频
+    - openImage   打开指定路径的图片预览
+    - playVideo   播放指定路径的视频
+    - editImage   给指定路径的图片添加滤镜（具体逻辑参考 FilterListFragment），参数：
+                    path（必填，图片路径）
+                    filter（可选，滤镜名称，支持 black_white / bw / sepia / retro / classic 等，
+                           缺省为 black_white 黑白滤镜；origin 表示不处理仅另存副本）
+                    outputPath（可选，输出文件路径，缺省写入 Pictures/fde 目录并返回实际路径）
 -->
 <appfunctions>
     <appfunction>
@@ -16,6 +21,13 @@
     <appfunction>
         <function_id>playVideo</function_id>
         <schema_name>playVideo</schema_name>
+        <schema_version>1</schema_version>
+        <schema_category>media</schema_category>
+        <enabled_by_default>true</enabled_by_default>
+    </appfunction>
+    <appfunction>
+        <function_id>editImage</function_id>
+        <schema_name>editImage</schema_name>
         <schema_version>1</schema_version>
         <schema_category>media</schema_category>
         <enabled_by_default>true</enabled_by_default>

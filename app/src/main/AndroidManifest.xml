@@ -128,7 +128,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.fde.gallery3d.fileprovider"
+            android:authorities="com.fde.gallery3d.debug.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -137,8 +137,8 @@
         </provider>
 
         <!--
-        通过 App Functions 向系统智能体（Agent）暴露"打开图片预览 / 播放视频"能力，
-        功能定义见 assets/appfunctions.xml（openImage / playVideo）。
+        通过 App Functions 向系统智能体（Agent）暴露"打开图片预览 / 播放视频 / 图片编辑"能力，
+        功能定义见 assets/appfunctions.xml（openImage / playVideo / editImage）。
         -->
         <service
             android:name=".appfunctions.MediaAppFunctionsService"
