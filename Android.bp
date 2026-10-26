@@ -244,6 +244,9 @@ android_app {
     required: [
         "privapp_whitelist_com.android.settings",
     ],
+    // 将 jni_libs 里的 .so 打包进 APK 的 lib/<abi>/ 目录（默认的捆绑式系统构建下
+    // Soong 只会把 .so 安装到 system/lib[64]，而不会放进 APK）。
+    use_embedded_native_libs: true,
     jni_libs: [
         "libtensorflowlite_jni",
         "libtesseract",
