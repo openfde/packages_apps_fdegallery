@@ -93,6 +93,7 @@ public class CutoutFragment extends BaseEditFragment implements OnClickListener 
         backToMenu.setOnClickListener(this);
         mCutoutBtn.setOnClickListener(this);
         mRestoreBtn.setOnClickListener(this);
+        onShow();
     }
 
     @Override
@@ -110,6 +111,7 @@ public class CutoutFragment extends BaseEditFragment implements OnClickListener 
     @Override
     public void onClick(View v) {
         if (v == backToMenu) {
+            activity.setSaveBtnShow(true);
             backToMain();
         } else if (v == mCutoutBtn) {
             startCutout();
@@ -232,6 +234,7 @@ public class CutoutFragment extends BaseEditFragment implements OnClickListener 
             activity.mainImage.setBackground(new CheckerBoardDrawable(square));
             activity.mainImage.setImageBitmap(result);
             mRestoreBtn.setVisibility(View.VISIBLE);
+            activity.setSaveBtnShow(true);
             if (mHint != null) {
                 mHint.setText(R.string.cutout_hint_done);
             }

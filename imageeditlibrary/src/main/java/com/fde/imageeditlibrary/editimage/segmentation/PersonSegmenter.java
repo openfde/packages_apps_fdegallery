@@ -53,6 +53,11 @@ public class PersonSegmenter {
     private static final float THRESHOLD_LOW = 0.30f;
     private static final float THRESHOLD_HIGH = 0.70f;
 
+    private static final int NUM_CLASSES = 21;
+
+    // 仅当模型使用 Pascal VOC 21 类标签顺序时成立。
+    private static final int PERSON_CLASS_INDEX = 15;
+
     private static volatile PersonSegmenter sInstance;
 
     private final Interpreter interpreter;
@@ -169,11 +174,60 @@ public class PersonSegmenter {
                     }
                 }
 
-                float[][][][] output = new float[1][size][size][1];
-                inputBuffer.rewind();
-                interpreter.run(inputBuffer, output);
+                // 读取模型实际输出形状
+                int[] outputShape = interpreter.getOutputTensor(0).shape();
 
-                return composeResult(source, output, srcW, srcH, size, dx, dy, dw, dh);
+                if (outputShape == null || outputShape.length != 4) {
+                    Log.e(TAG, "Unexpected output shape");
+                    return null;
+                }
+
+                int outputHeight = outputShape[1];
+                int outputWidth = outputShape[2];
+                int numClasses = outputShape[3];
+
+                if (PERSON_CLASS_INDEX >= numClasses) {
+                    Log.e(TAG, "Invalid person class index: "
+                            + PERSON_CLASS_INDEX + ", channels=" + numClasses);
+                    return null;
+                }
+
+// 接收完整的多通道分割输出
+                float[][][][] rawOutput = new float[1][outputHeight]
+                        [outputWidth][numClasses];
+
+                inputBuffer.rewind();
+                interpreter.run(inputBuffer, rawOutput);
+
+// 将人物类别转换成单通道人物概率图
+                float[][][][] personOutput = new float[1]
+                        [outputHeight][outputWidth][1];
+
+                for (int y = 0; y < outputHeight; y++) {
+                    for (int x = 0; x < outputWidth; x++) {
+                        float maxLogit = Float.NEGATIVE_INFINITY;
+
+                        for (int c = 0; c < numClasses; c++) {
+                            maxLogit = Math.max(maxLogit, rawOutput[0][y][x][c]);
+                        }
+
+                        double denominator = 0.0;
+                        for (int c = 0; c < numClasses; c++) {
+                            denominator += Math.exp(
+                                    rawOutput[0][y][x][c] - maxLogit);
+                        }
+
+                        double personProbability = Math.exp(
+                                rawOutput[0][y][x][PERSON_CLASS_INDEX] - maxLogit)
+                                / denominator;
+
+                        personOutput[0][y][x][0] = (float) personProbability;
+                    }
+                }
+
+                return composeResult(
+                        source, personOutput, srcW, srcH,
+                        size, dx, dy, dw, dh);
             }
         } catch (Exception e) {
             Log.e(TAG, "cutout failed", e);
