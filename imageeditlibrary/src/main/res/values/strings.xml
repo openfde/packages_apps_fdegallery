@@ -53,6 +53,13 @@
     <string name="white_skin">white skin</string>
     <string name="default_text">default</string>
 
+    <string name="cutout">cutout</string>
+    <string name="cutout_ing">segmenting…</string>
+    <string name="cutout_fail">person segmentation failed</string>
+    <string name="cutout_cancel">restore</string>
+    <string name="cutout_hint">tap "cutout" to detect the person and remove the background</string>
+    <string name="cutout_hint_done">preview: transparent checkerboard is the removed background</string>
+
     <string name="text_minimum">Minimum</string>
     <string name="text_small">Small</string>
     <string name="text_medium">Medium</string>

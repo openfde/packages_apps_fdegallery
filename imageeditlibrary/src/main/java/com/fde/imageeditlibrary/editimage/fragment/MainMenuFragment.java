@@ -42,6 +42,7 @@ public class MainMenuFragment extends BaseEditFragment implements View.OnClickLi
     private View mTextBtn;//文字型贴图添加
     private View mPaintBtn;//编辑按钮
     private View mBeautyBtn;//美颜按钮
+    private View mCutoutBtn;//人物抠图按钮
 
     public static MainMenuFragment newInstance() {
         MainMenuFragment fragment = new MainMenuFragment();
@@ -72,6 +73,7 @@ public class MainMenuFragment extends BaseEditFragment implements View.OnClickLi
         mTextBtn = mainView.findViewById(R.id.btn_text);
         mPaintBtn = mainView.findViewById(R.id.btn_paint);
         mBeautyBtn = mainView.findViewById(R.id.btn_beauty);
+        mCutoutBtn = mainView.findViewById(R.id.btn_cutout);
 
         stickerBtn.setOnClickListener(this);
         fliterBtn.setOnClickListener(this);
@@ -80,6 +82,7 @@ public class MainMenuFragment extends BaseEditFragment implements View.OnClickLi
         mTextBtn.setOnClickListener(this);
         mPaintBtn.setOnClickListener(this);
         mBeautyBtn.setOnClickListener(this);
+        mCutoutBtn.setOnClickListener(this);
     }
 
     @Override
@@ -116,6 +119,8 @@ public class MainMenuFragment extends BaseEditFragment implements View.OnClickLi
         }else if(v == mBeautyBtn){
             activity.switchFragmentBeauty();
 //            onBeautyClick();
+        }else if(v == mCutoutBtn){
+            activity.switchFragmentCutout();
         }
     }
 

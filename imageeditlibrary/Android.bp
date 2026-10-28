@@ -38,5 +38,9 @@ android_library {
         // 第三方
         "gallery-lib-photoView",
         "universalimageloader",
+
+        // 人物抠图（TFLite / LiteRT）：复用根 Android.bp 中导入的 tensorflow-lite AAR
+        "gallery-lib-tensorflow-lite",
+        "gallery-lib-tensorflow-lite-api",
     ],
 }

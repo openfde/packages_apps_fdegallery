@@ -47,4 +47,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.10.0'
     implementation(files("libs/PhotoView-2.3.0.aar"))
     implementation(files("libs/universal_image_loader.jar"))
+
+    // 人物抠图（TFLite / LiteRT）：复用工程内已内置的 TensorFlow Lite 2.16.1 AAR
+    api files('../app/libs/tensorflow-lite-2.16.1.aar')
+    api files('../app/libs/tensorflow-lite-api-2.16.1.aar')
 }
