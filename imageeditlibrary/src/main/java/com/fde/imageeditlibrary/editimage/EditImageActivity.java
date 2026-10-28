@@ -48,6 +48,7 @@ import com.fde.imageeditlibrary.R;
 import com.fde.imageeditlibrary.editimage.fragment.AddTextFragment;
 import com.fde.imageeditlibrary.editimage.fragment.BeautyFragment;
 import com.fde.imageeditlibrary.editimage.fragment.CropFragment;
+import com.fde.imageeditlibrary.editimage.fragment.CutoutFragment;
 import com.fde.imageeditlibrary.editimage.fragment.FilterListFragment;
 import com.fde.imageeditlibrary.editimage.fragment.MainMenuFragment;
 import com.fde.imageeditlibrary.editimage.fragment.PaintFragment;
@@ -90,6 +91,7 @@ public class EditImageActivity extends BaseActivity {
     public static final int MODE_TEXT = 5;// 文字模式
     public static final int MODE_PAINT = 6;//绘制模式
     public static final int MODE_BEAUTY = 7;//美颜模式
+    public static final int MODE_CUTOUT = 8;//人物抠图模式
 
     public String filePath;// 需要编辑图片路径
     public String saveFilePath;// 生成的新图片路径
@@ -125,6 +127,7 @@ public class EditImageActivity extends BaseActivity {
     public AddTextFragment mAddTextFragment;//图片添加文字
     public PaintFragment mPaintFragment;//绘制模式Fragment
     public BeautyFragment mBeautyFragment;//美颜模式Fragment
+    public CutoutFragment mCutoutFragment;//人物抠图Fragment
     private SaveImageTask mSaveImageTask;
 
     private RedoUndoController mRedoUndoController;//撤销操作
@@ -212,6 +215,7 @@ public class EditImageActivity extends BaseActivity {
         mAddTextFragment = AddTextFragment.newInstance();
         mPaintFragment = PaintFragment.newInstance();
         mBeautyFragment = BeautyFragment.newInstance();
+        mCutoutFragment = CutoutFragment.newInstance();
 
         bottomGallery.setAdapter(mBottomGalleryAdapter);
 
@@ -240,6 +244,10 @@ public class EditImageActivity extends BaseActivity {
 
     public void switchFragmentBeauty(){
         switchFragment(mBeautyFragment);
+    }
+
+    public void switchFragmentCutout(){
+        switchFragment(mCutoutFragment);
     }
 
     public void switchFragmentSticker(){
@@ -307,13 +315,15 @@ public class EditImageActivity extends BaseActivity {
                     return mPaintFragment;//绘制
                 case BeautyFragment.INDEX://美颜
                     return mBeautyFragment;
+                case CutoutFragment.INDEX://人物抠图
+                    return mCutoutFragment;
             }//end switch
             return MainMenuFragment.newInstance();
         }
 
         @Override
         public int getCount() {
-            return 8;
+            return 9;
         }
     }// end inner class
 
@@ -369,6 +379,9 @@ public class EditImageActivity extends BaseActivity {
                 return;
             case MODE_BEAUTY://从美颜模式中返回
                 mBeautyFragment.backToMain();
+                return;
+            case MODE_CUTOUT://从人物抠图模式中返回
+                mCutoutFragment.backToMain();
                 return;
         }// end switch
 
@@ -430,6 +443,9 @@ public class EditImageActivity extends BaseActivity {
                     break;
                 case MODE_BEAUTY://保存美颜后的图片
                     mBeautyFragment.applyBeauty();
+                    break;
+                case MODE_CUTOUT://应用人物抠图结果
+                    mCutoutFragment.applyCutout();
                     break;
                 default:
                     break;
