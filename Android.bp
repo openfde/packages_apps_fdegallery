@@ -179,6 +179,94 @@ cc_prebuilt_library_shared {
     check_elf_files: false,
 }
 
+
+// FFmpegMediaMetadataRetriever 的 jni 从 AAR 中单独拆出（AAR import 不会安装 native 库），
+// 供 wseemann.media.FFmpegMediaMetadataRetriever.<clinit> 依次加载
+// libavutil / libswscale / libavcodec / libavformat / libffmpeg_mediametadataretriever_jni，
+// 否则打开视频列表加载 FLV 缩略图时会抛 UnsatisfiedLinkError: library "libavutil.so" not found。
+// 注意：本树存在 external/ffmpeg，其 Make 模块占用了 libavcodec/libavformat/libavutil/libswscale
+// （含 32 位变体 _32），Soong 同名会报 MODULE.TARGET.SHARED_LIBRARIES.libavcodec_32 already defined。
+// 因此用 `2` 后缀作为 Soong 模块名避开冲突，同时用 stem 保持输出文件名为 lib<name>.so
+// （System.loadLibrary 按 lib<name> 查找）。
+cc_prebuilt_library_shared {
+    name: "libavcodec2",
+    stem: "libavcodec",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libavcodec.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libavcodec.so"] },
+        x86: { srcs: ["app/libs/x86/libavcodec.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libavcodec.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libavformat2",
+    stem: "libavformat",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libavformat.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libavformat.so"] },
+        x86: { srcs: ["app/libs/x86/libavformat.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libavformat.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libavutil2",
+    stem: "libavutil",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libavutil.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libavutil.so"] },
+        x86: { srcs: ["app/libs/x86/libavutil.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libavutil.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libswscale2",
+    stem: "libswscale",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libswscale.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libswscale.so"] },
+        x86: { srcs: ["app/libs/x86/libswscale.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libswscale.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
+cc_prebuilt_library_shared {
+    name: "libffmpeg_mediametadataretriever_jni",
+    owner: "fde",
+    arch: {
+        arm: { srcs: ["app/libs/armeabi-v7a/libffmpeg_mediametadataretriever_jni.so"] },
+        arm64: { srcs: ["app/libs/arm64-v8a/libffmpeg_mediametadataretriever_jni.so"] },
+        x86: { srcs: ["app/libs/x86/libffmpeg_mediametadataretriever_jni.so"] },
+        x86_64: { srcs: ["app/libs/x86_64/libffmpeg_mediametadataretriever_jni.so"] },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
+
 android_app {
     name: "FdeGallery",
     srcs: [
@@ -249,6 +337,11 @@ android_app {
     use_embedded_native_libs: true,
     jni_libs: [
         "libtensorflowlite_jni",
+        "libavcodec2",
+        "libavformat2",
+        "libavutil2",
+        "libswscale2",
+        "libffmpeg_mediametadataretriever_jni",
         "libtesseract",
         "libleptonica",
         "libpngx",
