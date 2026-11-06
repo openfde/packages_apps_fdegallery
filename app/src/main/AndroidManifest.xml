@@ -41,6 +41,13 @@
             android:resizeableActivity="true"
             android:theme="@style/Theme.FdeGallery.NoActionBar"
             tools:targetApi="24">
+
+            <layout
+                android:minWidth="1200dp"
+                android:minHeight="800dp"
+                android:defaultWidth="1200dp"
+                android:defaultHeight="800dp" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -58,10 +65,10 @@
             android:resizeableActivity="true"
             android:exported="true">
             <layout
-                android:minWidth="1000dp"
-                android:minHeight="600dp"
-                android:defaultWidth="1000dp"
-                android:defaultHeight="600dp" />
+                android:minWidth="1200dp"
+                android:minHeight="800dp"
+                android:defaultWidth="1200dp"
+                android:defaultHeight="800dp" />
             <intent-filter>
                 <action android:name="android.intent.action.ATTACH_DATA" />
 
@@ -86,6 +93,12 @@
             android:launchMode="standard"
             android:screenOrientation="portrait">
 
+            <layout
+                android:minWidth="1200dp"
+                android:minHeight="800dp"
+                android:defaultWidth="1200dp"
+                android:defaultHeight="800dp" />
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -101,6 +114,12 @@
             android:exported="true"
             android:launchMode="standard"
             android:screenOrientation="portrait">
+
+            <layout
+                android:minWidth="1200dp"
+                android:minHeight="800dp"
+                android:defaultWidth="1200dp"
+                android:defaultHeight="800dp" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

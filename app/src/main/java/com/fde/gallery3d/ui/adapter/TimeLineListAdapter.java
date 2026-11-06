@@ -2,7 +2,6 @@ package com.fde.gallery3d.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -14,18 +13,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fde.gallery3d.R;
-import com.fde.gallery3d.ui.TimeLineActivity;
 import com.fde.gallery3d.ui.base.BaseFragment;
 import com.fde.gallery3d.ui.bean.MultGroup;
-import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.event.ViewEvent;
 import com.fde.gallery3d.ui.utils.FileUtils;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TimeLineListAdapter extends RecyclerView.Adapter<TimeLineListAdapter.TimeLineListViewHolder> {
@@ -78,13 +76,12 @@ public class TimeLineListAdapter extends RecyclerView.Adapter<TimeLineListAdapte
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        Intent intent = new Intent();
-                        intent.putExtra("title", multGroup.getTitle());
-                        Bundle b = new Bundle();
-                        b.putSerializable("picList", (Serializable) multGroup.getList());
-                        intent.putExtras(b);
-                        intent.setClass(context, TimeLineActivity.class);
-                        baseFragment.getActivity().startActivityFromFragment(baseFragment,intent, Constant.ACTION_REQUEST_UPDATE);
+                        // 不再打开独立的 TimeLineActivity，改为以 Fragment 内嵌 MainActivity 展示
+                        Bundle bundle = new Bundle();
+                        bundle.putString("title", multGroup.getTitle());
+                        bundle.putSerializable("picList", new ArrayList<>(multGroup.getList()));
+                        NavHostFragment.findNavController(baseFragment)
+                                .navigate(R.id.nav_timeline_detail, bundle);
                         return true;
                     }
                 });

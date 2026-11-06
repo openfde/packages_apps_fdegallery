@@ -73,6 +73,18 @@ public class TimeLineListFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 从时间轴分组详情页返回时，若详情页内删除过媒体则刷新列表，
+        // 替代原来 TimeLineActivity 通过 startActivityForResult 回传的 ACTION_REQUEST_UPDATE
+        getParentFragmentManager().setFragmentResultListener(
+                TimeLineDetailFragment.KEY_TIMELINE_CHANGED,
+                this,
+                (requestKey, result) -> {
+                    if (result.getBoolean(TimeLineDetailFragment.KEY_CHANGED, false)
+                            && timeLinePersenter != null
+                            && context != null) {
+                        timeLinePersenter.getAllMedia(context);
+                    }
+                });
     }
 
     @Override

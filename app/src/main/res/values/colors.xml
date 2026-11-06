@@ -99,6 +99,7 @@
     <color name="side_item_selected_bg">#E3EBFB</color>
     <color name="side_item_pressed_bg">#EAECF0</color>
     <color name="side_accent">#2F6FE0</color>
+    <color name="blue">#00f</color>
     <color name="side_text">#333333</color>
     <color name="side_search_hint">#9AA0A6</color>
     <color name="side_search_stroke">#E2E5EA</color>

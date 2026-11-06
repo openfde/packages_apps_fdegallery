@@ -261,7 +261,11 @@ class MainActivity : AppCompatActivity() {
      * w800dp 布局把标题放在 toolbar_layout 的 caption_text 里（Toolbar 自带的标题
      * 会被自定义子 View 挤到屏幕外），其它布局继续使用 MaterialToolbar 自带标题。
      */
-    private fun setCaptionTitle(title: CharSequence) {
+    /**
+     * 设置顶部标题：Fragment 页面（如时间轴分组详情页）可调用
+     * 覆盖当前目的地的默认 label，保持与替换前的 Activity 行为一致。
+     */
+    fun setCaptionTitle(title: CharSequence) {
         val label = captionText
         if (label != null) {
             // 标题显隐交给布局控制（caption_text 设为 gone 时即不显示标题）
