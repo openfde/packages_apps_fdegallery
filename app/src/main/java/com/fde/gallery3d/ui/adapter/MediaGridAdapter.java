@@ -166,7 +166,6 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
                             .load(itemPath)
                             .error(R.mipmap.ic_launcher)
                             .thumbnail(0.1f)
-                            .dontAnimate()
                             .centerCrop()
                             .into(imageView);
                 }

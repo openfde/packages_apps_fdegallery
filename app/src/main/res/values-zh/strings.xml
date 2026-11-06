@@ -2,6 +2,8 @@
 <resources>
     <string name="app_name">图库</string>
     <string name="menu_timeline">时间轴</string>
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
     <string name="menu_picture">图片</string>
     <string name="menu_video">视频</string>
     <string name="menu_settings">设置</string>

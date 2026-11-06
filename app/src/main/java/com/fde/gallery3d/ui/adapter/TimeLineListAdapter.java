@@ -2,70 +2,102 @@ package com.fde.gallery3d.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Bundle;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseFragment;
 import com.fde.gallery3d.ui.bean.MultGroup;
+import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.event.ViewEvent;
 import com.fde.gallery3d.ui.utils.FileUtils;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
 
-public class TimeLineListAdapter extends RecyclerView.Adapter<TimeLineListAdapter.TimeLineListViewHolder> {
+/**
+ * 时间轴分组网格：把若干月份分组摊平成一条列表，
+ * 每组先渲染一个占满整行的日期标题 {@link #TYPE_HEADER}，
+ * 再把该组内所有媒体按网格渲染 {@link #TYPE_PHOTO}
+ * （条目样式与图片页 PictureListFragment 保持一致）。
+ */
+public class TimeLineListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context context;
     BaseFragment baseFragment;
-    List<MultGroup> list;
+    List<Object> items; // 每个元素为 MultGroup(日期标题) 或 Multimedia(具体媒体)
     int numberOfColumns;
     ViewEvent viewEvent;
     int itemSizePx;
     static final int PAYLOAD_SIZE = 1;
 
-    public TimeLineListAdapter(Context context, BaseFragment baseFragment, List<MultGroup> list, int numberOfColumns) {
+    public static final int TYPE_HEADER = 0;
+    public static final int TYPE_PHOTO = 1;
+
+    public TimeLineListAdapter(Context context, BaseFragment baseFragment, List<Object> items,
+                               int numberOfColumns, ViewEvent viewEvent) {
         this.context = context;
-        this.list = list;
-        this.numberOfColumns = numberOfColumns;
-//        this.viewEvent = viewEvent;
         this.baseFragment = baseFragment;
+        this.items = items;
+        this.numberOfColumns = numberOfColumns;
+        this.viewEvent = viewEvent;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return items.get(position) instanceof MultGroup ? TYPE_HEADER : TYPE_PHOTO;
     }
 
     @NonNull
     @Override
-    public TimeLineListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_timeline_list, parent, false);
-        TimeLineListAdapter.TimeLineListViewHolder holder = new TimeLineListAdapter.TimeLineListViewHolder(view);
-        return holder;
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == TYPE_HEADER) {
+            View view = LayoutInflater.from(context)
+                    .inflate(R.layout.item_timeline_header, parent, false);
+            return new HeaderViewHolder(view);
+        }
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.item_timeline, parent, false);
+        return new PhotoViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TimeLineListViewHolder holder, int position, @NonNull List<Object> payloads) {
-        if (!payloads.isEmpty() && payloads.contains(PAYLOAD_SIZE)) {
-            holder.updateSize(itemSizePx);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
+                                 @NonNull List<Object> payloads) {
+        if (holder instanceof PhotoViewHolder && !payloads.isEmpty()
+                && payloads.contains(PAYLOAD_SIZE)) {
+            ((PhotoViewHolder) holder).updateSize(itemSizePx);
             return;
         }
         onBindViewHolder(holder, position);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TimeLineListViewHolder holder, @SuppressLint("RecyclerView") final int position) {
-        MultGroup multGroup = list.get(position);
-        holder.bind(multGroup, itemSizePx);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder,
+                                 @SuppressLint("RecyclerView") final int position) {
+        Object item = items.get(position);
+        if (item instanceof MultGroup) {
+            ((HeaderViewHolder) holder).bind(((MultGroup) item).getTitle());
+            return;
+        }
 
+        final Multimedia picture = (Multimedia) item;
+        PhotoViewHolder photoHolder = (PhotoViewHolder) holder;
+        photoHolder.bind(picture, itemSizePx);
+        photoHolder.selectBorder.setVisibility(
+                picture.isSelected() ? View.VISIBLE : View.GONE);
 
+        // 与 PictureListFragment 交互一致：单击选中（支持 Ctrl / Shift），双击预览
         GestureDetector detector = new GestureDetector(context,
                 new GestureDetector.SimpleOnGestureListener() {
 
@@ -75,27 +107,44 @@ public class TimeLineListAdapter extends RecyclerView.Adapter<TimeLineListAdapte
                     }
 
                     @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        int metaState = e.getMetaState();
+                        boolean ctrlPressed =
+                                (metaState & KeyEvent.META_CTRL_MASK) != 0;
+                        boolean shiftPressed =
+                                (metaState & KeyEvent.META_SHIFT_MASK) != 0;
+                        boolean targetState;
+                        if (ctrlPressed) {
+                            targetState = !picture.isSelected();
+                        } else {
+                            targetState = true;
+                        }
+                        viewEvent.onSelectEvent(position, 0, targetState, ctrlPressed, shiftPressed);
+                        return true;
+                    }
+
+                    @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        // 不再打开独立的 TimeLineActivity，改为以 Fragment 内嵌 MainActivity 展示
-                        Bundle bundle = new Bundle();
-                        bundle.putString("title", multGroup.getTitle());
-                        bundle.putSerializable("picList", new ArrayList<>(multGroup.getList()));
-                        NavHostFragment.findNavController(baseFragment)
-                                .navigate(R.id.nav_timeline_detail, bundle);
+                        viewEvent.onJumpEvent(picture);
                         return true;
                     }
                 });
 
-        holder.rootView.setOnTouchListener((v, event) -> {
-            return detector.onTouchEvent(event);
-        });
+        photoHolder.rootView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
+        photoHolder.rootView.setOnLongClickListener(v -> false);
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return items.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        Object item = items.get(position);
+        // Header 用负数 id 避免与照片 id 冲突；照片用其媒体 id
+        return item instanceof MultGroup ? -(position + 1) : ((Multimedia) item).getId();
+    }
 
     public void updateItemSize(int sizePx) {
         if (itemSizePx != sizePx) {
@@ -104,45 +153,63 @@ public class TimeLineListAdapter extends RecyclerView.Adapter<TimeLineListAdapte
         }
     }
 
-    class TimeLineListViewHolder extends RecyclerView.ViewHolder {
-        RelativeLayout rootView;
-        ImageView imageView;
-        TextView txtTitle;
-        String path;
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView txtDateTitle;
 
-        public TimeLineListViewHolder(@NonNull View itemView) {
+        HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
-            rootView = (RelativeLayout) itemView.findViewById(R.id.rootView);
-            imageView = (ImageView) itemView.findViewById(R.id.imageView);
-            txtTitle = (TextView) itemView.findViewById(R.id.txtTitle);
+            txtDateTitle = itemView.findViewById(R.id.txtDateTitle);
         }
 
-        void bind(MultGroup item, int sizePx) {
+        void bind(String title) {
+            txtDateTitle.setText(title);
+        }
+    }
+
+    class PhotoViewHolder extends RecyclerView.ViewHolder {
+        FrameLayout rootView;
+        ImageView imageView;
+        View selectBorder;
+        String path;
+        long lastModified;
+
+        PhotoViewHolder(@NonNull View itemView) {
+            super(itemView);
+            rootView = (FrameLayout) itemView.findViewById(R.id.rootView);
+            imageView = (ImageView) itemView.findViewById(R.id.imageView);
+            selectBorder = itemView.findViewById(R.id.selectBorder);
+        }
+
+        void bind(Multimedia item, int sizePx) {
             updateSize(sizePx);
 
-            if (!item.getList().get(0).getPath().equals(path)) {
-                path = item.getList().get(0).getPath();
-                if(path.toLowerCase().endsWith(".flv")){
+            long modified = 0L;
+            try {
+                modified = new File(item.getPath()).lastModified();
+            } catch (Exception ignored) {
+            }
+            if (!item.getPath().equals(path) || modified != lastModified) {
+                path = item.getPath();
+                lastModified = modified;
+                if (path.toLowerCase().endsWith(".flv")) {
                     Glide.with(context).load(FileUtils.getFlvBitmap(path)).into(imageView);
-                }else {
+                } else {
                     Glide.with(imageView)
-                            .load(path)
+                            .load(item.getPath())
                             .error(R.mipmap.ic_launcher)
                             .thumbnail(0.1f) // ⭐ 首帧快
-                            .dontAnimate()
                             .centerCrop()
                             .into(imageView);
                 }
-                txtTitle.setText(item.getTitle());
             }
         }
 
         void updateSize(int sizePx) {
-            if(imageView !=null){
+            if (imageView != null) {
                 ViewGroup.LayoutParams lp = imageView.getLayoutParams();
                 if (lp.width != sizePx) {
                     lp.width = sizePx;
-                    lp.height =  (int) (sizePx * 0.8f);
+                    lp.height = (int) (sizePx * 0.8f);
                     imageView.setLayoutParams(lp);
                 }
             }

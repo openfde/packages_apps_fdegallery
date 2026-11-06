@@ -187,8 +187,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .centerCrop()
                             .override(400,400)
-                            .dontTransform()
-                            .dontAnimate();
+                            .dontTransform();
 
                     Glide.with(context)
                             .load(item.getPath())

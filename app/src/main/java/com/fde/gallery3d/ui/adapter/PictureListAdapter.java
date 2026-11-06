@@ -180,7 +180,6 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
                         .load(item.getPath())
                         .error(R.mipmap.ic_launcher)
                         .thumbnail(0.1f) // ⭐ 首帧快
-                        .dontAnimate()
                         .centerCrop()
                         .into(imageView);
             }

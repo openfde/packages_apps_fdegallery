@@ -24,12 +24,6 @@
         android:label="@string/menu_timeline"
         tools:layout="@layout/fragment_timeline" />
 
-    <!-- 时间轴分组详情页：双击时间轴分组后以 Fragment 内嵌在 MainActivity 中展示 -->
-    <fragment
-        android:id="@+id/nav_timeline_detail"
-        android:name="com.fde.gallery3d.ui.timeline.TimeLineDetailFragment"
-        android:label="@string/menu_timeline" />
-
     <fragment
         android:id="@+id/nav_collection"
         android:name="com.fde.gallery3d.ui.favorite.FavoriteFragment"
