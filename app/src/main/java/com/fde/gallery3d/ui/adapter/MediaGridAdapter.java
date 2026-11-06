@@ -2,7 +2,9 @@ package com.fde.gallery3d.ui.adapter;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -89,23 +91,40 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
     public void onBindViewHolder(@NonNull MediaViewHolder holder, int position) {
         final Multimedia media = list.get(position);
         holder.bind(media);
-        holder.rootView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.onMediaClick(media, holder.getBindingAdapterPosition());
-                }
-            }
-        });
-        holder.rootView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (listener != null) {
-                    listener.onMediaLongClick(v, media, holder.getBindingAdapterPosition());
-                }
-                return true;
-            }
-        });
+
+        GestureDetector detector = new GestureDetector(context,
+                new GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public boolean onDown(MotionEvent e) {
+                        return true; // ⚠️ 必须返回 true 才能收到 onDoubleTap
+                    }
+
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        // 单击不再打开预览，仅保留默认行为（无操作）
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onDoubleTap(MotionEvent e) {
+                        if (listener != null) {
+                            listener.onMediaClick(media, holder.getBindingAdapterPosition());
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+                        if (listener != null) {
+                            listener.onMediaLongClick(holder.rootView, media,
+                                    holder.getBindingAdapterPosition());
+                        }
+                    }
+                });
+
+        // 双击打开预览/播放；长按弹出菜单。
+        // 不用 setOnClickListener，否则单击也会触发（onSingleTapConfirmed 走不到）。
+        holder.rootView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
     @Override

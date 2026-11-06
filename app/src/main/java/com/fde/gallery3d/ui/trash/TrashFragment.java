@@ -61,12 +61,9 @@ public class TrashFragment extends BaseMediaGridFragment {
     }
 
     @Override
-    public void onMediaClick(Multimedia media, int position) {
-        showItemDialog(position);
-    }
-
-    @Override
     public void onMediaLongClick(View anchor, Multimedia media, int position) {
+        // 双击通过基类的 openMedia() 打开预览 / 播放；
+        // 长按仍然弹出恢复 / 彻底删除菜单。
         showItemDialog(position);
     }
 
