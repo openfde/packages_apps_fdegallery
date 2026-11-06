@@ -34,6 +34,7 @@ import com.fde.gallery3d.ui.base.BaseFragment;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.utils.LogTools;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,6 +47,17 @@ public class VideoListFragment extends BaseFragment {
     Context context;
     List<Multimedia> list;
     boolean isInit = false ;
+    ContentObserver mediaObserver;
+
+    /**
+     * 缓存的视频数据：Fragment 实例在视图因左侧导航切换被销毁后仍然保留。
+     * 重新进入视频页时复用该缓存，配合 DiffUtil 只更新变化项，避免缩略图重复加载。
+     */
+    private List<Multimedia> cachedVideos = new ArrayList<>();
+
+    public List<Multimedia> getCachedVideos() {
+        return cachedVideos;
+    }
 
     public VideoListFragment() {
     }
@@ -68,11 +80,13 @@ public class VideoListFragment extends BaseFragment {
         context.getContentResolver().registerContentObserver(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 true,
-                new ContentObserver(new Handler(Looper.getMainLooper())) {
+                mediaObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
                     @Override
                     public void onChange(boolean selfChange) {
                         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            videoListPersenter.getAllVideos(context);
+                            if (videoListPersenter != null) {
+                                videoListPersenter.getAllVideos(context);
+                            }
                         }, 1000);
                     }
                 }
@@ -84,7 +98,9 @@ public class VideoListFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        // 从左侧导航切换回视频页时也要刷新数据
+        // 从左侧导航切换回视频页时也会刷新数据。
+        // getAllVideos 内部通过 DiffUtil 只更新真正变化的条目，未变化的项不会重新绑定，
+        // 因此切换页面 / 重复刷新不会导致视频缩略图被重复加载。
         if (videoListPersenter != null) {
             context = getActivity();
             videoListPersenter.getAllVideos(context);
@@ -94,9 +110,23 @@ public class VideoListFragment extends BaseFragment {
     @Override
     protected void onFragmentVisibleChange(boolean isVisible) {
         super.onFragmentVisibleChange(isVisible);
-        if(isVisible){
-            videoListPersenter.getAllVideos(context);
+        // 不在这里刷新：避免与 onResume 重复触发整表刷新导致缩略图反复加载
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (mediaObserver != null && context != null) {
+            try {
+                context.getContentResolver().unregisterContentObserver(mediaObserver);
+            } catch (Exception ignored) {
+            }
+            mediaObserver = null;
         }
+        if (videoListPersenter != null) {
+            videoListPersenter.release();
+            videoListPersenter = null;
+        }
+        super.onDestroyView();
     }
 
     public  boolean hideBottomBtn() {

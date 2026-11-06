@@ -78,8 +78,9 @@ public class TimeLineListPersenter {
 
     public boolean initView() {
         numberOfColumns = DeviceUtils.getShowCount(baseFragment.getActivity());
-        list = new ArrayList<>();
-        listGroup = new ArrayList<>();
+        // 复用 Fragment 实例保存的缓存数据，视图重建后无需重复查询媒体库
+        list = ((TimeLineListFragment) baseFragment).getCachedList();
+        listGroup = ((TimeLineListFragment) baseFragment).getCachedGroup();
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         CustomScrollBarView bar = (CustomScrollBarView) view.findViewById(R.id.scrollBar);
         timeLineListAdapter = new TimeLineListAdapter(context, baseFragment, listGroup, numberOfColumns);

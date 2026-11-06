@@ -20,6 +20,7 @@ import com.fde.gallery3d.ui.common.MediaRepository;
 import com.fde.gallery3d.ui.favorite.FavoriteStore;
 import com.fde.gallery3d.ui.trash.TrashManager;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -141,13 +142,19 @@ public class CategoryFragment extends BaseMediaGridFragment implements AiMediaCl
                     toast(getString(nowFavorite ? R.string.favorite_added
                             : R.string.favorite_removed));
                     adapter.setFavoritePaths(FavoriteStore.getPaths(requireContext()));
-                    adapter.notifyDataSetChanged();
+                    // 只重新绑定当前项，刷新收藏图标，其它项的缩略图不受影响
+                    if (position >= 0 && position < adapter.getItemCount()) {
+                        adapter.notifyItemChanged(position);
+                    } else {
+                        adapter.notifyDataSetChanged();
+                    }
                 } else if (item.getItemId() == 2) {
                     boolean moved = TrashManager.moveToTrash(requireContext(), media);
                     toast(getString(moved ? R.string.moved_to_trash_count
                             : R.string.move_to_trash_failed, moved ? 1 : 0));
                     if (moved) {
-                        reload();
+                        // 局部移除，不整表刷新，避免其它项缩略图重复加载
+                        removeMediaItems(Collections.singletonList(media));
                     }
                 }
                 return true;

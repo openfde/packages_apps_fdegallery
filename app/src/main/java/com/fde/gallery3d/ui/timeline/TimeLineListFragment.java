@@ -27,8 +27,13 @@ import androidx.fragment.app.Fragment;
 
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseFragment;
+import com.fde.gallery3d.ui.bean.MultGroup;
+import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.utils.LogTools;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -38,6 +43,22 @@ import com.fde.gallery3d.ui.utils.LogTools;
 public class TimeLineListFragment extends BaseFragment {
     TimeLineListPersenter timeLinePersenter;
     Context context;
+
+    /**
+     * 缓存的时间轴数据：Fragment 实例在视图因左侧导航切换被销毁后仍然保留。
+     * 重新进入时间轴页时复用缓存，不再重复查询媒体库、重复加载缩略图。
+     */
+    private final List<Multimedia> cachedList = new ArrayList<>();
+    private final List<MultGroup> cachedGroup = new ArrayList<>();
+    private boolean isDataLoaded = false;
+
+    public List<Multimedia> getCachedList() {
+        return cachedList;
+    }
+
+    public List<MultGroup> getCachedGroup() {
+        return cachedGroup;
+    }
 
     public TimeLineListFragment() {
     }
@@ -67,8 +88,10 @@ public class TimeLineListFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        // 从左侧导航切换回时间轴页时也要刷新数据
-        if (timeLinePersenter != null) {
+        // 数据只在首次进入时加载；从左侧导航切换回时间轴页时复用缓存数据，
+        // 避免重复查询媒体库、重复加载缩略图
+        if (timeLinePersenter != null && !isDataLoaded) {
+            isDataLoaded = true;
             context = getActivity();
             timeLinePersenter.getAllMedia(context);
         }
@@ -77,12 +100,7 @@ public class TimeLineListFragment extends BaseFragment {
     @Override
     protected void onFragmentVisibleChange(boolean isVisible) {
         super.onFragmentVisibleChange(isVisible);
-        if (isVisible) {
-            LogTools.i("-----time------onFragmentVisibleChange-------");
-            if (isVisible) {
-                timeLinePersenter.getAllMedia(context);
-            }
-        }
+        // 不在这里刷新：避免与 onResume 重复触发整表刷新导致缩略图反复加载
     }
 
     @Override

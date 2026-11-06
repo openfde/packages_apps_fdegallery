@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,7 +30,10 @@ import com.fde.gallery3d.ui.view.CustomScrollBarView;
 import com.fde.gallery3d.ui.view.RecyclerScrollBinder;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 搜索 / 收藏 / 回收站页面的公共基类：负责九宫格、空状态和布局自适应。
@@ -85,6 +89,116 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         reload();
     }
 
+    /**
+     * 重新加载数据并刷新界面。
+     * 用 DiffUtil 只更新真正变化的条目：未变化的项不会重新绑定，
+     * 因此从其它页面切换回来 / 重复刷新不会重复加载缩略图。
+     */
+    protected void reload() {
+        if (adapter == null || txtEmpty == null) {
+            return;
+        }
+        List<Multimedia> fresh = new ArrayList<>();
+        loadMedia(fresh);
+        adapter.setFavoritePaths(FavoriteStore.getPaths(requireContext()));
+        DiffUtil.DiffResult diffResult =
+                DiffUtil.calculateDiff(new MediaGridDiffCallback(mediaList, fresh), true);
+        mediaList.clear();
+        mediaList.addAll(fresh);
+        diffResult.dispatchUpdatesTo(adapter);
+        updateEmptyAndHeader();
+    }
+
+    /**
+     * 局部删除：只移除目标项，后面的项向前挪一位，前面的项保持不变，不整表刷新。
+     *
+     * @return 实际移除的条数
+     */
+    protected int removeMediaItems(List<Multimedia> toRemove) {
+        if (adapter == null || toRemove == null || toRemove.isEmpty()) {
+            return 0;
+        }
+        Set<String> removePaths = new HashSet<>();
+        for (Multimedia media : toRemove) {
+            if (media != null && !TextUtils.isEmpty(media.getPath())) {
+                removePaths.add(media.getPath());
+            }
+        }
+        if (removePaths.isEmpty()) {
+            return 0;
+        }
+        List<Integer> removeIndexes = new ArrayList<>();
+        for (int i = 0; i < mediaList.size(); i++) {
+            if (removePaths.contains(mediaList.get(i).getPath())) {
+                removeIndexes.add(i);
+            }
+        }
+        // 从后往前删，索引不会错位
+        Collections.sort(removeIndexes, Collections.reverseOrder());
+        for (int index : removeIndexes) {
+            mediaList.remove(index);
+            adapter.notifyItemRemoved(index);
+        }
+        updateEmptyAndHeader();
+        return removeIndexes.size();
+    }
+
+    private void updateEmptyAndHeader() {
+        if (emptyView != null) {
+            emptyView.setVisibility(mediaList.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+        if (txtEmpty != null) {
+            txtEmpty.setText(getEmptyText());
+        }
+        onDataLoaded(mediaList);
+    }
+
+    /**
+     * 比较新旧媒体列表：id / 路径判断是否同一条，路径判断内容是否变化。
+     * 内容未变化的条目不会重新绑定，缩略图得以保留。
+     */
+    private static class MediaGridDiffCallback extends DiffUtil.Callback {
+
+        private final List<Multimedia> oldList;
+        private final List<Multimedia> newList;
+
+        MediaGridDiffCallback(List<Multimedia> oldList, List<Multimedia> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            if (oldItem.getId() != 0 && oldItem.getId() == newItem.getId()) {
+                return true;
+            }
+            return oldItem.getPath() != null && oldItem.getPath().equals(newItem.getPath());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            return equals(oldItem.getPath(), newItem.getPath());
+        }
+
+        private static boolean equals(Object left, Object right) {
+            return left == null ? right == null : left.equals(right);
+        }
+    }
+
     @Override
     public void onDestroyView() {
         if (layoutChangeListener != null && getActivity() != null) {
@@ -130,25 +244,6 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         int span = Math.max(1, widthPx / minItemPx);
         layoutManager.setSpanCount(span);
         adapter.updateItemSize(widthPx / span);
-    }
-
-    /**
-     * 重新加载数据并刷新界面
-     */
-    protected void reload() {
-        if (adapter == null || txtEmpty == null) {
-            return;
-        }
-        mediaList.clear();
-        loadMedia(mediaList);
-        adapter.setFavoritePaths(FavoriteStore.getPaths(requireContext()));
-        adapter.notifyDataSetChanged();
-
-        if (emptyView != null) {
-            emptyView.setVisibility(mediaList.isEmpty() ? View.VISIBLE : View.GONE);
-        }
-        txtEmpty.setText(getEmptyText());
-        onDataLoaded(mediaList);
     }
 
     /**
