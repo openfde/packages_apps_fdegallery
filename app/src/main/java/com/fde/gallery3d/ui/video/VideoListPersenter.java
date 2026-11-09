@@ -105,9 +105,11 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
         txtAllSelected.setOnClickListener(this);
         txtCancel.setOnClickListener(this);
         txtCollect.setOnClickListener(this);
-        gridLayoutManager = new GridLayoutManager(context, 3);
+        int initialWidth = getInitialWindowWidth();
+        gridLayoutManager = new GridLayoutManager(context, getSpanCount(initialWidth));
         recyclerView.setLayoutManager(gridLayoutManager);
-        listenWindowResize();
+        // 刷新走 DiffUtil，关闭默认增删/移动动画，避免窗口宽度变化时列表重排抖动。
+        recyclerView.setItemAnimator(null);
 //        recyclerView.addItemDecoration(new SpacesItemDecoration(2));  // Here 16 is the space size
         list = ((VideoListFragment) baseFragment).getCachedVideos();
         videoListAdapter = new VideoListAdapter(context, list, numberOfColumns, this);
@@ -115,6 +117,9 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
         recyclerView.setAdapter(videoListAdapter);
         recyclerView.setNestedScrollingEnabled(false);
         RecyclerScrollBinder.bind(recyclerView, bar);
+
+        // adapter 创建后再监听窗口尺寸，否则首次计算会因 adapter 为空而失效
+        listenWindowResize();
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             private long touchDownTime = 0;
@@ -154,6 +159,27 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
         windowLayoutListener =
                 (v, l, t, r, b, ol, ot, orr, ob) -> onWindowWidthChanged(r - l);
         root.addOnLayoutChangeListener(windowLayoutListener);
+        // 立即计算一次，保证首帧就是正确列数 / item 尺寸
+        int width = root.getWidth();
+        if (width <= 0) {
+            width = getInitialWindowWidth();
+        }
+        onWindowWidthChanged(width);
+    }
+
+    private int getInitialWindowWidth() {
+        if (baseFragment.getActivity() != null) {
+            View decor = baseFragment.getActivity().getWindow().getDecorView();
+            if (decor.getWidth() > 0) {
+                return decor.getWidth();
+            }
+        }
+        return baseFragment.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    private int getSpanCount(int widthPx) {
+        int minItemPx = Math.max(1, DeviceUtils.dpToPx(context, 160));
+        return Math.max(1, widthPx / minItemPx);
     }
 
     /**
@@ -171,9 +197,13 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
     }
 
     private void onWindowWidthChanged(int widthPx) {
-        int minItemPx = DeviceUtils.dpToPx(context, 160);
-        int span = Math.max(1, widthPx / minItemPx);
-        gridLayoutManager.setSpanCount(span);
+        if (widthPx <= 0 || gridLayoutManager == null || videoListAdapter == null) {
+            return;
+        }
+        int span = getSpanCount(widthPx);
+        if (gridLayoutManager.getSpanCount() != span) {
+            gridLayoutManager.setSpanCount(span);
+        }
         int itemSize = widthPx / span;
         videoListAdapter.updateItemSize(itemSize);
     }

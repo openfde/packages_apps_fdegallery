@@ -106,19 +106,37 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         txtDelete.setOnClickListener(this);
         txtCancel.setOnClickListener(this);
         txtCollect.setOnClickListener(this);
-        gridLayoutManager = new GridLayoutManager(context, 3);
-
+        // 首帧就使用正确的列数：不要硬编码 3 列再等窗口布局回调修正，
+        // 否则列表会先按 3 列铺一遍，再整体重排成实际列数，产生明显抖动。
+        gridLayoutManager = new GridLayoutManager(context, getSpanCount(getInitialWindowWidth()));
         recyclerView.setLayoutManager(gridLayoutManager);
+
+        // 列表刷新全部通过 DiffUtil 做局部更新，不需要默认的增删/移动动画；
+        // 关掉动画可以避免列数或窗口宽度变化时整屏条目来回移动。
+        recyclerView.setItemAnimator(null);
         recyclerView.setNestedScrollingEnabled(false);
 
-        listenWindowResize();
-//        recyclerView.addItemDecoration(new SpacesItemDecoration(2));
-        list = new ArrayList<>();
+        // 复用缓存列表：View 因左侧导航切换被销毁后重建时，adapter 一挂上就有数据，
+        // 不会先空白再整体插入，缩略图和滚动位置也能立即恢复。
+        if (baseFragment instanceof PictureListFragment) {
+            list = ((PictureListFragment) baseFragment).getCachedImages();
+            // 底部操作栏随 View 重建回到隐藏状态，缓存里的选中态也要清掉，
+            // 避免出现“有选中项但没有操作栏”的不一致状态。
+            for (Multimedia media : list) {
+                media.setSelected(false);
+            }
+        } else {
+            list = new ArrayList<>();
+        }
         pictureListAdapter = new PictureListAdapter(context, list, numberOfColumns, this);
         pictureListAdapter.setHasStableIds(true);
         recyclerView.setAdapter(pictureListAdapter);
 
         RecyclerScrollBinder.bind(recyclerView, bar);
+
+        // 必须在 adapter 创建之后再监听/计算，否则 onWindowWidthChanged 会因
+        // pictureListAdapter == null 直接返回，首帧仍然停留在 3 列。
+        listenWindowResize();
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             private long touchDownTime = 0;
@@ -158,8 +176,32 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         View root = baseFragment.getActivity().getWindow().getDecorView();
         windowLayoutListener = (v, l, t, r, b, ol, ot, orr, ob) -> onWindowWidthChanged(r - l);
         root.addOnLayoutChangeListener(windowLayoutListener);
-        // 立即按当前窗口宽度计算一次，避免首帧 itemSize 为 0
-        onWindowWidthChanged(root.getWidth());
+        // 立即按当前窗口宽度计算一次，避免首帧 itemSize / 列数为 0 或默认值
+        int width = root.getWidth();
+        if (width <= 0) {
+            width = getInitialWindowWidth();
+        }
+        onWindowWidthChanged(width);
+    }
+
+    /**
+     * onCreateView 阶段窗口通常还没有完成布局，decorView.getWidth() 可能为 0。
+     * 此时退回到当前窗口的显示宽度（freeform 窗口下是窗口宽度，不是整块屏幕），
+     * 保证第一帧就按最终宽度计算列数。
+     */
+    private int getInitialWindowWidth() {
+        if (baseFragment.getActivity() != null) {
+            View decor = baseFragment.getActivity().getWindow().getDecorView();
+            if (decor.getWidth() > 0) {
+                return decor.getWidth();
+            }
+        }
+        return baseFragment.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    private int getSpanCount(int widthPx) {
+        int minItemPx = Math.max(1, DeviceUtils.dpToPx(context, 160));
+        return Math.max(1, widthPx / minItemPx);
     }
 
     /**
@@ -180,11 +222,10 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         if (widthPx <= 0 || gridLayoutManager == null || pictureListAdapter == null) {
             return;
         }
-        int minItemPx = DeviceUtils.dpToPx(context, 160);
-        int span = Math.max(1, widthPx / minItemPx);
-
-        gridLayoutManager.setSpanCount(span);
-
+        int span = getSpanCount(widthPx);
+        if (gridLayoutManager.getSpanCount() != span) {
+            gridLayoutManager.setSpanCount(span);
+        }
         int itemSize = widthPx / span;
         pictureListAdapter.updateItemSize(itemSize);
     }

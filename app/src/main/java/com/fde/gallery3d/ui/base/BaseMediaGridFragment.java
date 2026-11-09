@@ -67,6 +67,9 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         layoutManager = new GridLayoutManager(requireContext(), 3);
         recyclerView.setLayoutManager(layoutManager);
         adapter = new MediaGridAdapter(requireContext(), mediaList, this);
+        // 刷新统一走 DiffUtil 局部更新，关闭默认增删/移动动画，
+        // 避免窗口宽度或列数变化时整屏条目来回移动造成抖动。
+        recyclerView.setItemAnimator(null);
         recyclerView.setAdapter(adapter);
         RecyclerScrollBinder.bind(recyclerView, scrollBar);
 
