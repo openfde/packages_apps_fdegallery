@@ -65,7 +65,13 @@ public class FavoriteFragment extends BaseMediaGridFragment {
                         reload();
                     }
                 } else if (item.getItemId() == 2) {
-                    boolean moved = TrashManager.moveToTrash(requireContext(), media);
+                    boolean moved = false;
+                    try {
+                        moved = TrashManager.moveToTrash(requireContext(), media);
+                    } catch (SecurityException e) {
+                        // 无删除权限：不崩溃，提示失败
+                        toast(getString(R.string.move_to_trash_failed));
+                    }
                     toast(getString(moved ? R.string.moved_to_trash_count : R.string.move_to_trash_failed,
                             moved ? 1 : 0));
                     if (moved) {

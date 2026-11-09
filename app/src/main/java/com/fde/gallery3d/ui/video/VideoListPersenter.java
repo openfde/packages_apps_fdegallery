@@ -584,7 +584,14 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
             return;
         }
         // 移入回收站，代替直接删除
-        int count = TrashManager.moveToTrash(context, delList);
+        final int count;
+        try {
+            count = TrashManager.moveToTrash(context, delList);
+        } catch (RecoverableSecurityException e) {
+            // 需要系统授权删除：文件已移回原位，弹窗请求授权，授权结果回到 onActivityResult 后重试
+            baseFragment.requestConfirmDialog(e);
+            return;
+        }
         if (count > 0) {
             baseFragment.showShortToast(
                     context.getString(R.string.moved_to_trash_count, count));

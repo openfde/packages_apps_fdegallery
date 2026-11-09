@@ -46,15 +46,21 @@ public class TrashManager {
             return false;
         }
 
-        // 2. 删除媒体库记录（此时原路径文件已经不存在，MediaProvider 只会移除记录）
+        // 2. 删除媒体库记录（此时原路径文件已经不存在，MediaProvider 只会移除记录）。
+        //    注意：对非应用自有的媒体（例如系统截图），ContentResolver.delete() 会抛出
+        //    RecoverableSecurityException / SecurityException。这种情况下必须先把文件
+        //    移回原位并向上抛出该异常，由界面层（Fragment）用系统对话框请求删除授权；
+        //    用户授权后会在 onActivityResult 中重试，从而保证“移入回收站”完整生效。
+        //    其它非安全异常则记录日志后继续（文件已成功移入回收站，仍可被恢复）。
         try {
             FileUtils.deleteMediaStoreEntry(context, media.getMediaType(), media.getPath());
-        } catch (Exception e) {
-            // 删除记录失败，回滚文件
-            LogTools.e("moveToTrash: delete record failed, rollback: " + e);
-            FileUtils.moveFile(dest, src);
+        } catch (SecurityException e) {
+            LogTools.e("moveToTrash: delete MediaStore record needs permission, restore file: " + e);
+            FileUtils.moveFile(dest, src);        // 恢复原位，避免数据丢失
             FileUtils.scanFile(context, media.getPath());
-            return false;
+            throw e;                               // 让调用方弹窗请求授权后重试
+        } catch (Exception e) {
+            LogTools.e("moveToTrash: delete MediaStore record failed (file kept in trash): " + e);
         }
 
         // 3. 记录到回收站

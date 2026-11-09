@@ -383,7 +383,14 @@ public class TimeLineActivity extends BaseActivity implements View.OnClickListen
     public void deleteImage() {
         if (delList != null && !delList.isEmpty()) {
             // 移入回收站，代替直接删除
-            int count = TrashManager.moveToTrash(context, delList);
+            final int count;
+            try {
+                count = TrashManager.moveToTrash(context, delList);
+            } catch (RecoverableSecurityException e) {
+                // 需要系统授权删除：弹窗请求授权，授权结果回到 onActivityResult 后重试
+                requestConfirmDialog(e);
+                return;
+            }
             if (count > 0) {
                 showShortToast(getString(R.string.moved_to_trash_count, count));
             } else {

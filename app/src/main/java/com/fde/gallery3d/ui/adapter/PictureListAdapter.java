@@ -33,6 +33,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.event.ViewEvent;
@@ -180,6 +181,7 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
                         .load(item.getPath())
                         .error(R.mipmap.ic_launcher)
                         .thumbnail(0.1f) // ⭐ 首帧快
+                        .transition(DrawableTransitionOptions.withCrossFade(0))
                         .centerCrop()
                         .into(imageView);
             }

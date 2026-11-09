@@ -596,7 +596,10 @@ public class TimeLineListPersenter implements ViewEvent, View.OnClickListener {
                             context.getString(R.string.move_to_trash_failed));
                 }
             } catch (RecoverableSecurityException e) {
+                // 需要系统授权删除：文件已移回原位，弹窗请求系统授权；
+                // 授权结果回到 onActivityResult 后重试。
                 baseFragment.requestConfirmDialog(e);
+                return;
             }
             // 重新查询以重建分组
             getAllMedia(context);

@@ -619,13 +619,20 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     public void deleteImage() {
         if (delList != null && !delList.isEmpty()) {
             // 移入回收站，代替直接删除
-            int count = TrashManager.moveToTrash(context, delList);
-            if (count > 0) {
-                baseFragment.showShortToast(
-                        context.getString(R.string.moved_to_trash_count, count));
-            } else {
-                baseFragment.showShortToast(
-                        context.getString(R.string.move_to_trash_failed));
+            try {
+                int count = TrashManager.moveToTrash(context, delList);
+                if (count > 0) {
+                    baseFragment.showShortToast(
+                            context.getString(R.string.moved_to_trash_count, count));
+                } else {
+                    baseFragment.showShortToast(
+                            context.getString(R.string.move_to_trash_failed));
+                }
+            } catch (RecoverableSecurityException e) {
+                // 需要系统授权删除：文件已移回原位，弹窗请求系统授权；
+                // 授权结果回到 onActivityResult 后重试。
+                baseFragment.requestConfirmDialog(e);
+                return;
             }
             pictureListAdapter.notifyDataSetChanged();
             updateBottomBarBySelection();
