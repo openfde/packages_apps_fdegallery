@@ -23,7 +23,6 @@ import com.fde.gallery3d.ui.VideoPlayActivity;
 import com.fde.gallery3d.ui.adapter.MediaGridAdapter;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
-import com.fde.gallery3d.ui.favorite.FavoriteStore;
 import com.fde.gallery3d.ui.picture.PicturePreviewFragment;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.view.CustomScrollBarView;
@@ -100,7 +99,6 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         }
         List<Multimedia> fresh = new ArrayList<>();
         loadMedia(fresh);
-        adapter.setFavoritePaths(FavoriteStore.getPaths(requireContext()));
         DiffUtil.DiffResult diffResult =
                 DiffUtil.calculateDiff(new MediaGridDiffCallback(mediaList, fresh), true);
         mediaList.clear();

@@ -23,11 +23,6 @@ public class TrashFragment extends BaseMediaGridFragment {
     }
 
     @Override
-    protected void onGridCreated(View root) {
-        adapter.setShowTitle(true);
-    }
-
-    @Override
     protected void loadMedia(List<Multimedia> out) {
         items.clear();
         items.addAll(TrashStore.getAll(requireContext()));

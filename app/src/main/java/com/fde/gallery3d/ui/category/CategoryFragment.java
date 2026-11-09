@@ -141,8 +141,7 @@ public class CategoryFragment extends BaseMediaGridFragment implements AiMediaCl
                     boolean nowFavorite = FavoriteStore.toggle(requireContext(), media);
                     toast(getString(nowFavorite ? R.string.favorite_added
                             : R.string.favorite_removed));
-                    adapter.setFavoritePaths(FavoriteStore.getPaths(requireContext()));
-                    // 只重新绑定当前项，刷新收藏图标，其它项的缩略图不受影响
+                    // 只重新绑定当前项，其余项的缩略图不受影响
                     if (position >= 0 && position < adapter.getItemCount()) {
                         adapter.notifyItemChanged(position);
                     } else {
