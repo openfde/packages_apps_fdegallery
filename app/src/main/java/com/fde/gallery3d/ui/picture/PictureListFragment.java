@@ -36,8 +36,12 @@ import androidx.fragment.app.Fragment;
 
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseFragment;
+import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.utils.LogTools;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -49,6 +53,18 @@ public class PictureListFragment extends BaseFragment {
     Context context;
     PictureListPersenter pictureListPersenter;
     ContentObserver mediaObserver;
+
+    /**
+     * 跨 View 重建缓存图片列表：左侧导航切换会销毁并重建 Fragment 的 View，
+     * 若每次都从空列表开始加载，列表会先空白再整体插入，造成闪烁 / 重排。
+     * 与视频页的 cachedVideos 一样，重建 View 时先复用缓存，再在 onResume 中
+     * 用 DiffUtil 做增量刷新，未变化的条目不会被重新绑定。
+     */
+    private final List<Multimedia> cachedImages = new ArrayList<>();
+
+    public List<Multimedia> getCachedImages() {
+        return cachedImages;
+    }
 
     public PictureListFragment() {
     }
@@ -121,6 +137,7 @@ public class PictureListFragment extends BaseFragment {
         }
         if (pictureListPersenter != null) {
             pictureListPersenter.release();
+            pictureListPersenter = null;
         }
         super.onDestroyView();
     }
@@ -128,8 +145,9 @@ public class PictureListFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        // 从左侧导航切换回图片页时也要刷新数据
-        if (pictureListPersenter != null) {
+        // 从左侧导航切换回图片页时也要刷新数据。
+        // 列表已从 cachedImages 恢复，DiffUtil 只会更新真正变化的条目。
+        if (pictureListPersenter != null && getView() != null) {
             context = getActivity();
             pictureListPersenter.getAllImages(context);
         }
@@ -138,9 +156,9 @@ public class PictureListFragment extends BaseFragment {
     @Override
     protected void onFragmentVisibleChange(boolean isVisible) {
         super.onFragmentVisibleChange(isVisible);
+        // 不在这里刷新：onResume 已经负责刷新，避免首次进入时重复整表加载。
         if (isVisible) {
             LogTools.i("----onFragmentVisibleChange---pic-----");
-            pictureListPersenter.getAllImages(context);
         }
     }
 

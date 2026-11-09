@@ -74,6 +74,9 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     boolean isAllSelected;
     boolean isShowBottomBtn = false;
 
+    /** Shift 范围选择的锚点（最后一次普通单击 / Ctrl 单击的位置，越界时取当前选中项） */
+    private int anchorPos = -1;
+
     int numberOfColumns = 3;
 
 
@@ -103,19 +106,37 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         txtDelete.setOnClickListener(this);
         txtCancel.setOnClickListener(this);
         txtCollect.setOnClickListener(this);
-        gridLayoutManager = new GridLayoutManager(context, 3);
-
+        // 首帧就使用正确的列数：不要硬编码 3 列再等窗口布局回调修正，
+        // 否则列表会先按 3 列铺一遍，再整体重排成实际列数，产生明显抖动。
+        gridLayoutManager = new GridLayoutManager(context, getSpanCount(getInitialWindowWidth()));
         recyclerView.setLayoutManager(gridLayoutManager);
+
+        // 列表刷新全部通过 DiffUtil 做局部更新，不需要默认的增删/移动动画；
+        // 关掉动画可以避免列数或窗口宽度变化时整屏条目来回移动。
+        recyclerView.setItemAnimator(null);
         recyclerView.setNestedScrollingEnabled(false);
 
-        listenWindowResize();
-//        recyclerView.addItemDecoration(new SpacesItemDecoration(2));
-        list = new ArrayList<>();
+        // 复用缓存列表：View 因左侧导航切换被销毁后重建时，adapter 一挂上就有数据，
+        // 不会先空白再整体插入，缩略图和滚动位置也能立即恢复。
+        if (baseFragment instanceof PictureListFragment) {
+            list = ((PictureListFragment) baseFragment).getCachedImages();
+            // 底部操作栏随 View 重建回到隐藏状态，缓存里的选中态也要清掉，
+            // 避免出现“有选中项但没有操作栏”的不一致状态。
+            for (Multimedia media : list) {
+                media.setSelected(false);
+            }
+        } else {
+            list = new ArrayList<>();
+        }
         pictureListAdapter = new PictureListAdapter(context, list, numberOfColumns, this);
         pictureListAdapter.setHasStableIds(true);
         recyclerView.setAdapter(pictureListAdapter);
 
         RecyclerScrollBinder.bind(recyclerView, bar);
+
+        // 必须在 adapter 创建之后再监听/计算，否则 onWindowWidthChanged 会因
+        // pictureListAdapter == null 直接返回，首帧仍然停留在 3 列。
+        listenWindowResize();
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             private long touchDownTime = 0;
@@ -155,8 +176,32 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         View root = baseFragment.getActivity().getWindow().getDecorView();
         windowLayoutListener = (v, l, t, r, b, ol, ot, orr, ob) -> onWindowWidthChanged(r - l);
         root.addOnLayoutChangeListener(windowLayoutListener);
-        // 立即按当前窗口宽度计算一次，避免首帧 itemSize 为 0
-        onWindowWidthChanged(root.getWidth());
+        // 立即按当前窗口宽度计算一次，避免首帧 itemSize / 列数为 0 或默认值
+        int width = root.getWidth();
+        if (width <= 0) {
+            width = getInitialWindowWidth();
+        }
+        onWindowWidthChanged(width);
+    }
+
+    /**
+     * onCreateView 阶段窗口通常还没有完成布局，decorView.getWidth() 可能为 0。
+     * 此时退回到当前窗口的显示宽度（freeform 窗口下是窗口宽度，不是整块屏幕），
+     * 保证第一帧就按最终宽度计算列数。
+     */
+    private int getInitialWindowWidth() {
+        if (baseFragment.getActivity() != null) {
+            View decor = baseFragment.getActivity().getWindow().getDecorView();
+            if (decor.getWidth() > 0) {
+                return decor.getWidth();
+            }
+        }
+        return baseFragment.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    private int getSpanCount(int widthPx) {
+        int minItemPx = Math.max(1, DeviceUtils.dpToPx(context, 160));
+        return Math.max(1, widthPx / minItemPx);
     }
 
     /**
@@ -177,11 +222,10 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         if (widthPx <= 0 || gridLayoutManager == null || pictureListAdapter == null) {
             return;
         }
-        int minItemPx = DeviceUtils.dpToPx(context, 160);
-        int span = Math.max(1, widthPx / minItemPx);
-
-        gridLayoutManager.setSpanCount(span);
-
+        int span = getSpanCount(widthPx);
+        if (gridLayoutManager.getSpanCount() != span) {
+            gridLayoutManager.setSpanCount(span);
+        }
         int itemSize = widthPx / span;
         pictureListAdapter.updateItemSize(itemSize);
     }
@@ -305,12 +349,58 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
 
     @Override
     public void onSelectEvent(int pos, int groupPos, boolean isSelect) {
+        onSelectEvent(pos, groupPos, isSelect, false, false);
+    }
+
+    @Override
+    public void onSelectEvent(int pos, int groupPos, boolean isSelect,
+                              boolean ctrlPressed, boolean shiftPressed) {
         try {
-            if (pos >= 0 && pos < list.size()) {
+            if (list == null || pos < 0 || pos >= list.size()) {
+                return;
+            }
+            if (ctrlPressed) {
+                // Ctrl 单击：只追加/取消当前项，不影响其它已选项
                 Multimedia picture = list.get(pos);
-                picture.setSelected(isSelect);
+                picture.setSelected(!picture.isSelected());
                 list.set(pos, picture);
                 pictureListAdapter.notifyItemChanged(pos);
+            } else if (shiftPressed) {
+                // Shift 单击：选中上次锚点到当前位置之间的所有项（范围选择）
+                int anchor = (anchorPos >= 0 && anchorPos < list.size()) ? anchorPos : pos;
+                int start = Math.min(anchor, pos);
+                int end = Math.max(anchor, pos);
+                boolean changed = false;
+                for (int i = start; i <= end; i++) {
+                    Multimedia picture = list.get(i);
+                    if (!picture.isSelected()) {
+                        picture.setSelected(true);
+                        list.set(i, picture);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    pictureListAdapter.notifyItemRangeChanged(start, end - start + 1);
+                }
+            } else {
+                // 普通单击：取消其它所有选择，只选中当前项
+                boolean changed = false;
+                for (int i = 0; i < list.size(); i++) {
+                    Multimedia picture = list.get(i);
+                    boolean shouldSelect = (i == pos);
+                    if (picture.isSelected() != shouldSelect) {
+                        picture.setSelected(shouldSelect);
+                        list.set(i, picture);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    pictureListAdapter.notifyDataSetChanged();
+                }
+            }
+            // 普通单击与 Ctrl 单击会重置 Shift 锚点，Shift 选择不移动锚点
+            if (!shiftPressed) {
+                anchorPos = pos;
             }
             updateBottomBarBySelection();
         } catch (Exception e) {
@@ -570,13 +660,20 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     public void deleteImage() {
         if (delList != null && !delList.isEmpty()) {
             // 移入回收站，代替直接删除
-            int count = TrashManager.moveToTrash(context, delList);
-            if (count > 0) {
-                baseFragment.showShortToast(
-                        context.getString(R.string.moved_to_trash_count, count));
-            } else {
-                baseFragment.showShortToast(
-                        context.getString(R.string.move_to_trash_failed));
+            try {
+                int count = TrashManager.moveToTrash(context, delList);
+                if (count > 0) {
+                    baseFragment.showShortToast(
+                            context.getString(R.string.moved_to_trash_count, count));
+                } else {
+                    baseFragment.showShortToast(
+                            context.getString(R.string.move_to_trash_failed));
+                }
+            } catch (RecoverableSecurityException e) {
+                // 需要系统授权删除：文件已移回原位，弹窗请求系统授权；
+                // 授权结果回到 onActivityResult 后重试。
+                baseFragment.requestConfirmDialog(e);
+                return;
             }
             pictureListAdapter.notifyDataSetChanged();
             updateBottomBarBySelection();

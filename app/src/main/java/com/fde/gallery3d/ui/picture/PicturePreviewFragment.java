@@ -300,6 +300,12 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         if (getArguments() != null) {
             fromArgs = (Multimedia) getArguments().getSerializable(ARG_PICTURE);
         }
+        // 通过 App Function（openImage）或外部 Intent 直接以 picture_data 打开时，
+        // Fragment 没有 arguments，此时读取宿主 Activity Intent 里携带的图片数据。
+        if (fromArgs == null && getActivity() != null && getActivity().getIntent() != null) {
+            fromArgs = (Multimedia) getActivity().getIntent()
+                    .getSerializableExtra(ARG_PICTURE);
+        }
         List<Multimedia> tempList = FileUtils.getAllImages(context);
 
         if (fromArgs != null) {

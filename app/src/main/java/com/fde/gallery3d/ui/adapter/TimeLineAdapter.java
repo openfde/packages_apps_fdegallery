@@ -165,7 +165,6 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .centerCrop() // 裁剪图片以适应ImageView的大小
                             .dontTransform() // 禁用任何额外的转换
-                            .dontAnimate()
                             .into(imageView);
                 }
 

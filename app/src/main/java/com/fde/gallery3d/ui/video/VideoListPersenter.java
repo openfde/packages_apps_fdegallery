@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -32,6 +33,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,7 +53,10 @@ import com.fde.gallery3d.ui.view.RecyclerScrollBinder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class VideoListPersenter implements ViewEvent, View.OnClickListener {
     Context context;
@@ -71,6 +76,11 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
     boolean isAllSelected;
 
     boolean isShowBottomBtn = false;
+
+    /** Shift 范围选择的锚点（最后一次普通单击 / Ctrl 单击的位置） */
+    private int anchorPos = -1;
+
+    View.OnLayoutChangeListener windowLayoutListener;
 
     BaseFragment baseFragment;
 
@@ -95,16 +105,21 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
         txtAllSelected.setOnClickListener(this);
         txtCancel.setOnClickListener(this);
         txtCollect.setOnClickListener(this);
-        gridLayoutManager = new GridLayoutManager(context, 3);
+        int initialWidth = getInitialWindowWidth();
+        gridLayoutManager = new GridLayoutManager(context, getSpanCount(initialWidth));
         recyclerView.setLayoutManager(gridLayoutManager);
-        listenWindowResize();
+        // 刷新走 DiffUtil，关闭默认增删/移动动画，避免窗口宽度变化时列表重排抖动。
+        recyclerView.setItemAnimator(null);
 //        recyclerView.addItemDecoration(new SpacesItemDecoration(2));  // Here 16 is the space size
-        list = new ArrayList<>();
+        list = ((VideoListFragment) baseFragment).getCachedVideos();
         videoListAdapter = new VideoListAdapter(context, list, numberOfColumns, this);
         videoListAdapter.setHasStableIds(true);
         recyclerView.setAdapter(videoListAdapter);
         recyclerView.setNestedScrollingEnabled(false);
         RecyclerScrollBinder.bind(recyclerView, bar);
+
+        // adapter 创建后再监听窗口尺寸，否则首次计算会因 adapter 为空而失效
+        listenWindowResize();
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             private long touchDownTime = 0;
@@ -141,20 +156,54 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     private void listenWindowResize() {
         View root = baseFragment.getActivity().getWindow().getDecorView();
-        root.addOnLayoutChangeListener(
-                (v, l, t, r, b, ol, ot, orr, ob) -> {
-                    int newW = r - l;
-                    int oldW = orr - ol;
-//                    if (newW != oldW) {
-                        onWindowWidthChanged(newW);
-//                    }
-                });
+        windowLayoutListener =
+                (v, l, t, r, b, ol, ot, orr, ob) -> onWindowWidthChanged(r - l);
+        root.addOnLayoutChangeListener(windowLayoutListener);
+        // 立即计算一次，保证首帧就是正确列数 / item 尺寸
+        int width = root.getWidth();
+        if (width <= 0) {
+            width = getInitialWindowWidth();
+        }
+        onWindowWidthChanged(width);
+    }
+
+    private int getInitialWindowWidth() {
+        if (baseFragment.getActivity() != null) {
+            View decor = baseFragment.getActivity().getWindow().getDecorView();
+            if (decor.getWidth() > 0) {
+                return decor.getWidth();
+            }
+        }
+        return baseFragment.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    private int getSpanCount(int widthPx) {
+        int minItemPx = Math.max(1, DeviceUtils.dpToPx(context, 160));
+        return Math.max(1, widthPx / minItemPx);
+    }
+
+    /**
+     * 列表 Fragment 的 View 销毁时释放监听，避免多次创建后残留监听导致重复刷新 / 内存泄漏
+     */
+    public void release() {
+        if (windowLayoutListener != null && baseFragment.getActivity() != null) {
+            try {
+                baseFragment.getActivity().getWindow().getDecorView()
+                        .removeOnLayoutChangeListener(windowLayoutListener);
+            } catch (Exception ignored) {
+            }
+        }
+        windowLayoutListener = null;
     }
 
     private void onWindowWidthChanged(int widthPx) {
-        int minItemPx = DeviceUtils.dpToPx(context, 160);
-        int span = Math.max(1, widthPx / minItemPx);
-        gridLayoutManager.setSpanCount(span);
+        if (widthPx <= 0 || gridLayoutManager == null || videoListAdapter == null) {
+            return;
+        }
+        int span = getSpanCount(widthPx);
+        if (gridLayoutManager.getSpanCount() != span) {
+            gridLayoutManager.setSpanCount(span);
+        }
         int itemSize = widthPx / span;
         videoListAdapter.updateItemSize(itemSize);
     }
@@ -165,11 +214,69 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
      * @param context
      */
     public void getAllVideos(Context context) {
-        if (list != null) {
-            list.clear();
+        if (list == null || videoListAdapter == null) {
+            return;
         }
-        list.addAll(FileUtils.getAllVideos(context));
-        videoListAdapter.notifyDataSetChanged();
+        List<Multimedia> videos = FileUtils.getAllVideos(context);
+        if (videos == null) {
+            videos = new ArrayList<>();
+        }
+        // 用 DiffUtil 只更新真正变化的条目：
+        // 删除的项后面往前挪，未变化的项不重新绑定，从而避免切换页面 / 重复刷新时缩略图被反复加载。
+        DiffUtil.DiffResult diffResult =
+                DiffUtil.calculateDiff(new VideoDiffCallback(list, videos), true);
+        list.clear();
+        list.addAll(videos);
+        diffResult.dispatchUpdatesTo(videoListAdapter);
+    }
+
+    /**
+     * 比较新旧视频列表：id / 路径判断是否同一条，时间、大小、时长判断内容是否变化。
+     * 内容未变化的条目不会重新绑定，缩略图得以保留。
+     */
+    private static class VideoDiffCallback extends DiffUtil.Callback {
+
+        private final List<Multimedia> oldList;
+        private final List<Multimedia> newList;
+
+        VideoDiffCallback(List<Multimedia> oldList, List<Multimedia> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            if (oldItem.getId() != 0 && oldItem.getId() == newItem.getId()) {
+                return true;
+            }
+            return oldItem.getPath() != null && oldItem.getPath().equals(newItem.getPath());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            Multimedia oldItem = oldList.get(oldItemPosition);
+            Multimedia newItem = newList.get(newItemPosition);
+            return equals(oldItem.getPath(), newItem.getPath())
+                    && oldItem.getDateTaken() == newItem.getDateTaken()
+                    && oldItem.getSize() == newItem.getSize()
+                    && oldItem.getDuration() == newItem.getDuration();
+        }
+
+        private static boolean equals(Object left, Object right) {
+            return left == null ? right == null : left.equals(right);
+        }
     }
 
     @Override
@@ -212,12 +319,58 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     @Override
     public void onSelectEvent(int pos, int groupPos, boolean isSelect) {
+        onSelectEvent(pos, groupPos, isSelect, false, false);
+    }
+
+    @Override
+    public void onSelectEvent(int pos, int groupPos, boolean isSelect,
+                              boolean ctrlPressed, boolean shiftPressed) {
         try {
-            if (pos >= 0 && pos < list.size()) {
+            if (list == null || pos < 0 || pos >= list.size()) {
+                return;
+            }
+            if (ctrlPressed) {
+                // Ctrl 单击：只追加/取消当前项，不影响其它已选项
                 Multimedia video = list.get(pos);
-                video.setSelected(isSelect);
+                video.setSelected(!video.isSelected());
                 list.set(pos, video);
                 videoListAdapter.notifyItemChanged(pos);
+            } else if (shiftPressed) {
+                // Shift 单击：选中上次锚点到当前位置之间的所有项（范围选择）
+                int anchor = (anchorPos >= 0 && anchorPos < list.size()) ? anchorPos : pos;
+                int start = Math.min(anchor, pos);
+                int end = Math.max(anchor, pos);
+                boolean changed = false;
+                for (int i = start; i <= end; i++) {
+                    Multimedia video = list.get(i);
+                    if (!video.isSelected()) {
+                        video.setSelected(true);
+                        list.set(i, video);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    videoListAdapter.notifyItemRangeChanged(start, end - start + 1);
+                }
+            } else {
+                // 普通单击：取消其它所有选择，只选中当前项
+                boolean changed = false;
+                for (int i = 0; i < list.size(); i++) {
+                    Multimedia video = list.get(i);
+                    boolean shouldSelect = (i == pos);
+                    if (video.isSelected() != shouldSelect) {
+                        video.setSelected(shouldSelect);
+                        list.set(i, video);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    videoListAdapter.notifyDataSetChanged();
+                }
+            }
+            // 普通单击与 Ctrl 单击会重置 Shift 锚点，Shift 选择不移动锚点
+            if (!shiftPressed) {
+                anchorPos = pos;
             }
             updateBottomBarBySelection();
         } catch (Exception e) {
@@ -351,7 +504,6 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
         } else if (id == R.id.txtDelete) {
 
-            List<Multimedia> tempList = new ArrayList<>();
             delList = new ArrayList<>();
 
             for (int i = 0; i < list.size(); i++) {
@@ -359,8 +511,6 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
                 if (video.isSelected()) {
                     delList.add(video);
-                } else {
-                    tempList.add(video);
                 }
             }
 
@@ -385,8 +535,6 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
                                 DialogInterface dialogInterface,
                                 int pos) {
 
-                            list.clear();
-                            list.addAll(tempList);
                             deleteVideo();
                         }
                     });
@@ -462,18 +610,79 @@ public class VideoListPersenter implements ViewEvent, View.OnClickListener {
 
     @SuppressLint("NewApi")
     public void deleteVideo() {
-        if (delList != null && !delList.isEmpty()) {
-            // 移入回收站，代替直接删除
-            int count = TrashManager.moveToTrash(context, delList);
-            if (count > 0) {
-                baseFragment.showShortToast(
-                        context.getString(R.string.moved_to_trash_count, count));
-            } else {
-                baseFragment.showShortToast(
-                        context.getString(R.string.move_to_trash_failed));
-            }
-            videoListAdapter.notifyDataSetChanged();
-            updateBottomBarBySelection();
+        if (delList == null || delList.isEmpty() || list == null) {
+            return;
         }
+        // 移入回收站，代替直接删除
+        final int count;
+        try {
+            count = TrashManager.moveToTrash(context, delList);
+        } catch (RecoverableSecurityException e) {
+            // 需要系统授权删除：文件已移回原位，弹窗请求授权，授权结果回到 onActivityResult 后重试
+            baseFragment.requestConfirmDialog(e);
+            return;
+        }
+        if (count > 0) {
+            baseFragment.showShortToast(
+                    context.getString(R.string.moved_to_trash_count, count));
+        } else {
+            baseFragment.showShortToast(
+                    context.getString(R.string.move_to_trash_failed));
+        }
+
+        // 局部更新：只把被删除项后面的文件向前挪一位，前面的文件保持不变。
+        // 不调用 notifyDataSetChanged，避免整表重载导致缩略图重复加载。
+        Set<String> deletePaths = new HashSet<>();
+        for (Multimedia media : delList) {
+            if (media != null && !TextUtils.isEmpty(media.getPath())) {
+                deletePaths.add(media.getPath());
+            }
+        }
+        delList.clear();
+
+        if (videoListAdapter == null || deletePaths.isEmpty()) {
+            updateBottomBarBySelection();
+            return;
+        }
+
+        List<Integer> removeIndexes = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if (deletePaths.contains(list.get(i).getPath())) {
+                removeIndexes.add(i);
+            }
+        }
+        // 从后往前删，索引不会错位
+        Collections.sort(removeIndexes, Collections.reverseOrder());
+        for (int index : removeIndexes) {
+            list.remove(index);
+            videoListAdapter.notifyItemRemoved(index);
+        }
+
+        isAllSelected = false;
+        resetAllSelectedButton();
+        updateBottomBarBySelection();
+    }
+
+    /**
+     * 删除后重置“全选 / 取消全选”按钮文案与图标
+     */
+    private void resetAllSelectedButton() {
+        if (txtAllSelected == null || context == null) {
+            return;
+        }
+        txtAllSelected.setText(context.getString(R.string.select_all));
+        Drawable drawableTop = context.getDrawable(R.drawable.ic_main_all_selected);
+        if (drawableTop != null) {
+            drawableTop.setBounds(
+                    0,
+                    0,
+                    drawableTop.getIntrinsicWidth(),
+                    drawableTop.getIntrinsicHeight());
+        }
+        txtAllSelected.setCompoundDrawables(
+                null,
+                drawableTop,
+                null,
+                null);
     }
 }

@@ -48,6 +48,13 @@
     <string name="smooth">磨皮</string>
     <string name="white_skin">美白</string>
 
+    <string name="cutout">抠图</string>
+    <string name="cutout_ing">抠图中…</string>
+    <string name="cutout_fail">人物分割失败，请重试</string>
+    <string name="cutout_cancel">恢复原图</string>
+    <string name="cutout_hint">点击"抠图"，自动识别人物并去除背景</string>
+    <string name="cutout_hint_done">预览：棋盘格为已去除的背景</string>
+
     <string name="default_text">默认</string>
 
     <string name="text_minimum">极小</string>

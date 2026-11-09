@@ -2,30 +2,33 @@ package com.fde.gallery3d.ui.adapter;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.bean.Multimedia;
-import com.fde.gallery3d.ui.common.Constant;
 import com.fde.gallery3d.ui.utils.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 搜索 / 收藏 / 回收站通用的媒体九宫格适配器。
+ * <p>
+ * 布局与样式对齐 {@link PictureListAdapter}（item_picture_list）：
+ * 仅保留图片 + 选中边框，宽高比 0.8、Glide 交叉淡入、按文件修改时间重新加载。
+ * 交互保持：双击预览 / 播放，长按弹出菜单。
  */
 public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.MediaViewHolder> {
 
@@ -40,26 +43,13 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
     private final Context context;
     private final List<Multimedia> list;
     private final Listener listener;
-    private final Set<String> favoritePaths = new HashSet<>();
 
-    private boolean showTitle;
     private int itemSizePx;
 
     public MediaGridAdapter(Context context, List<Multimedia> list, Listener listener) {
         this.context = context;
         this.list = list == null ? new ArrayList<Multimedia>() : list;
         this.listener = listener;
-    }
-
-    public void setFavoritePaths(Set<String> paths) {
-        favoritePaths.clear();
-        if (paths != null) {
-            favoritePaths.addAll(paths);
-        }
-    }
-
-    public void setShowTitle(boolean showTitle) {
-        this.showTitle = showTitle;
     }
 
     public void updateItemSize(int sizePx) {
@@ -88,24 +78,42 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
     @Override
     public void onBindViewHolder(@NonNull MediaViewHolder holder, int position) {
         final Multimedia media = list.get(position);
-        holder.bind(media);
-        holder.rootView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.onMediaClick(media, holder.getBindingAdapterPosition());
-                }
-            }
-        });
-        holder.rootView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (listener != null) {
-                    listener.onMediaLongClick(v, media, holder.getBindingAdapterPosition());
-                }
-                return true;
-            }
-        });
+        holder.bind(media, itemSizePx);
+        holder.selectBorder.setVisibility(media.isSelected() ? View.VISIBLE : View.GONE);
+
+        GestureDetector detector = new GestureDetector(context,
+                new GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public boolean onDown(MotionEvent e) {
+                        return true; // ⚠️ 必须返回 true 才能收到 onDoubleTap
+                    }
+
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        // 单击不再打开预览，仅保留默认行为（无操作）
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onDoubleTap(MotionEvent e) {
+                        if (listener != null) {
+                            listener.onMediaClick(media, holder.getBindingAdapterPosition());
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+                        if (listener != null) {
+                            listener.onMediaLongClick(holder.rootView, media,
+                                    holder.getBindingAdapterPosition());
+                        }
+                    }
+                });
+
+        // 双击打开预览/播放；长按弹出菜单。
+        // 不用 setOnClickListener，否则单击也会触发（onSingleTapConfirmed 走不到）。
+        holder.rootView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
     @Override
@@ -113,67 +121,65 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
         return list.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        return list.get(position).getId();
+    }
+
     class MediaViewHolder extends RecyclerView.ViewHolder {
         FrameLayout rootView;
         ImageView imageView;
-        ImageView imgType;
-        ImageView imgFavorite;
-        TextView txtTitle;
+        View selectBorder;
         String path;
+        long lastModified;
 
         MediaViewHolder(@NonNull View itemView) {
             super(itemView);
             rootView = itemView.findViewById(R.id.rootView);
             imageView = itemView.findViewById(R.id.imageView);
-            imgType = itemView.findViewById(R.id.imgType);
-            imgFavorite = itemView.findViewById(R.id.imgFavorite);
-            txtTitle = itemView.findViewById(R.id.txtTitle);
+            selectBorder = itemView.findViewById(R.id.selectBorder);
         }
 
-        void bind(Multimedia item) {
-            updateSize(itemSizePx);
+        void bind(Multimedia item, int sizePx) {
+            updateSize(sizePx);
 
             final String itemPath = item.getPath();
-            if (!TextUtils.isEmpty(itemPath) && !itemPath.equals(path)) {
+            if (TextUtils.isEmpty(itemPath)) {
+                return;
+            }
+            long modified = 0L;
+            try {
+                modified = new File(itemPath).lastModified();
+            } catch (Exception ignored) {
+            }
+            // 路径相同但文件被重新保存（例如预览页旋转）时也要重新加载
+            if (!itemPath.equals(path) || modified != lastModified) {
                 path = itemPath;
+                lastModified = modified;
                 if (itemPath.toLowerCase().endsWith(".flv")) {
-                    Glide.with(context)
+                    Glide.with(imageView)
                             .load(FileUtils.getFlvBitmap(itemPath))
                             .error(R.mipmap.ic_launcher)
+                            .transition(DrawableTransitionOptions.withCrossFade(0))
                             .centerCrop()
                             .into(imageView);
                 } else {
-                    Glide.with(context)
+                    Glide.with(imageView)
                             .load(itemPath)
                             .error(R.mipmap.ic_launcher)
-                            .thumbnail(0.1f)
-                            .dontAnimate()
+                            .thumbnail(0.1f) // ⭐ 首帧快
+                            .transition(DrawableTransitionOptions.withCrossFade(0))
                             .centerCrop()
                             .into(imageView);
                 }
-            }
-
-            imgType.setVisibility(item.getMediaType() == Constant.MEDIA_VIDEO ? View.VISIBLE : View.GONE);
-            imgFavorite.setVisibility(favoritePaths.contains(itemPath) ? View.VISIBLE : View.GONE);
-
-            if (showTitle) {
-                txtTitle.setVisibility(View.VISIBLE);
-                String title = item.getTitle();
-                if (TextUtils.isEmpty(title) && !TextUtils.isEmpty(itemPath)) {
-                    title = new File(itemPath).getName();
-                }
-                txtTitle.setText(title == null ? "" : title);
-            } else {
-                txtTitle.setVisibility(View.GONE);
             }
         }
 
         void updateSize(int sizePx) {
-            int height = (int) (sizePx * 0.78f);
             ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-            if (lp.width != sizePx || lp.height != height) {
+            if (lp.width != sizePx) {
                 lp.width = sizePx;
-                lp.height = height;
+                lp.height = (int) (sizePx * 0.8f);
                 imageView.setLayoutParams(lp);
             }
         }

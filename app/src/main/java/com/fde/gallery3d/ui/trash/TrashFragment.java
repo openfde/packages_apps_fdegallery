@@ -23,11 +23,6 @@ public class TrashFragment extends BaseMediaGridFragment {
     }
 
     @Override
-    protected void onGridCreated(View root) {
-        adapter.setShowTitle(true);
-    }
-
-    @Override
     protected void loadMedia(List<Multimedia> out) {
         items.clear();
         items.addAll(TrashStore.getAll(requireContext()));
@@ -61,12 +56,9 @@ public class TrashFragment extends BaseMediaGridFragment {
     }
 
     @Override
-    public void onMediaClick(Multimedia media, int position) {
-        showItemDialog(position);
-    }
-
-    @Override
     public void onMediaLongClick(View anchor, Multimedia media, int position) {
+        // 双击通过基类的 openMedia() 打开预览 / 播放；
+        // 长按仍然弹出恢复 / 彻底删除菜单。
         showItemDialog(position);
     }
 
