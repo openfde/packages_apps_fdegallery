@@ -367,7 +367,18 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
         if (picture == null) {
             picture = new Multimedia();
             Uri uri = Uri.parse(realPath);
-            String documentId = DocumentsContract.getDocumentId(uri).replaceAll("image:", "");
+            // 只有 document URI（如 content://com.android.providers.media.documents/document/...）才能解析 documentId。
+            // 外部应用可能通过 FileProvider 等非 DocumentsProvider 传入 URI
+            //（如 content://com.android.launcher3.overview.fileprovider/Desktop/x11.jpg），
+            // 直接调用 DocumentsContract.getDocumentId 会抛 IllegalArgumentException，这里先判断并兜底。
+            String documentId = null;
+            try {
+                if (DocumentsContract.isDocumentUri(context, uri)) {
+                    documentId = DocumentsContract.getDocumentId(uri).replaceAll("image:", "");
+                }
+            } catch (Exception e) {
+                LogTools.e("resolveFromIntent getDocumentId failed, uri=" + uri + ", " + e);
+            }
             boolean isNumeric = documentId != null && documentId.matches("\\d+");
             LogTools.d("isNumeric：    " + isNumeric + ",documentId  " + documentId);
             if (isNumeric) {
@@ -379,7 +390,7 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
                     }
                 }
                 picture.setPath(realPath);
-            } else {
+            } else if (documentId != null) {
                 String relativePath = documentId.substring(documentId.indexOf(':') + 1);
                 LogTools.d("relativePath：    " + relativePath);
                 if (relativePath.contains("volumes")) {
@@ -387,6 +398,12 @@ public class PicturePreviewFragment extends Fragment implements View.OnClickList
                 } else {
                     picture.setPath("/storage/emulated/0/" + relativePath);
                 }
+                picture.setId(-1);
+            } else {
+                // 非 document URI：无法解析出 documentId，直接使用原始 URI 作为路径，
+                // 后续 Glide / ContentResolver 可按 content URI 读取。
+                LogTools.d("not a document uri, use raw uri as path: " + realPath);
+                picture.setPath(realPath);
                 picture.setId(-1);
             }
         }
