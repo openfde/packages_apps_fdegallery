@@ -1,9 +1,11 @@
 package com.fde.gallery3d
 
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.Intent
 import android.graphics.Color
+import android.content.res.ColorStateList
+import android.content.res.Configuration
+
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
@@ -17,7 +19,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewTreeObserver
 import android.view.WindowInsetsController
 import android.widget.EditText
 import android.widget.ImageView
@@ -27,14 +28,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavOptions
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -42,7 +42,6 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.fde.gallery3d.ui.search.SearchState
-import com.fde.gallery3d.ui.utils.LogTools
 import com.fde.gallery3d.ui.view.SmartAlbumMenuView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -93,25 +92,25 @@ class MainActivity : AppCompatActivity() {
         setupCaptionBarInsets();
         setupGestureExclusion();
 
-        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
 
-            val systemBarsVisible =
-                insets.isVisible(WindowInsetsCompat.Type.statusBars()) ||
-                        insets.isVisible(WindowInsetsCompat.Type.navigationBars())
-
-            val isFullscreen = !systemBarsVisible
-            Log.d("Fullscreen", "isFullscreen=$isFullscreen")
-            if(isFullscreen){
-                leftNavigator?.visibility = View.VISIBLE
-                viewDivider?.visibility = View.VISIBLE
-                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.side_bg)
-            }else{
-                leftNavigator?.visibility = View.GONE
-                viewDivider?.visibility = View.GONE
-                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.app_white)
-            }
-            insets
-        }
+//        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+//
+//            Log.d("TAG", "isFullscreen= setupCaptionInsets() view:" + view + " windowInsets:" + insets);
+//            val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.statusBars()) || insets.isVisible(WindowInsetsCompat.Type.navigationBars())
+//
+//            val isFullscreen = !systemBarsVisible
+////            Log.d("Fullscreen", "isFullscreen=$isFullscreen")
+//            if(isFullscreen){
+//                leftNavigator?.visibility = View.VISIBLE
+//                viewDivider?.visibility = View.VISIBLE
+//                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.side_bg)
+//            }else{
+//                leftNavigator?.visibility = View.GONE
+//                viewDivider?.visibility = View.GONE
+//                layoutBrand?.background = ContextCompat.getDrawable(this, R.color.app_white)
+//            }
+//            insets
+//        }
 
         val navHostFragment =
             (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
@@ -187,6 +186,20 @@ class MainActivity : AppCompatActivity() {
 
         setupSideSearch(navController)
         setupToolbarTitle(navController)
+    }
+
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if(isInMultiWindowMode){
+            leftNavigator?.visibility = View.VISIBLE
+            viewDivider?.visibility = View.VISIBLE
+            layoutBrand?.background = ContextCompat.getDrawable(this, R.color.side_bg)
+        }else{
+            leftNavigator?.visibility = View.GONE
+            viewDivider?.visibility = View.GONE
+            layoutBrand?.background = ContextCompat.getDrawable(this, R.color.app_white)
+        }
     }
 
     /**
