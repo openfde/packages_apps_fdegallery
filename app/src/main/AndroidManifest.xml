@@ -94,10 +94,10 @@
             android:screenOrientation="portrait">
 
             <layout
-                android:minWidth="1200dp"
-                android:minHeight="800dp"
-                android:defaultWidth="1200dp"
-                android:defaultHeight="800dp" />
+                android:minWidth="1000dp"
+                android:minHeight="750dp"
+                android:defaultWidth="1000dp"
+                android:defaultHeight="750dp" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
