@@ -2,8 +2,11 @@ package com.fde.gallery3d.ui.trash;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseMediaGridFragment;
@@ -20,6 +23,14 @@ public class TrashFragment extends BaseMediaGridFragment {
     private final List<TrashItem> items = new ArrayList<>();
 
     public TrashFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 单击选中 + 底部操作栏：回收站只显示 全选 / 彻底删除 / 取消
+        selectionEnabled = true;
+        gridMode = GridMode.TRASH;
     }
 
     @Override
@@ -53,6 +64,52 @@ public class TrashFragment extends BaseMediaGridFragment {
     @Override
     protected void onHeaderAction() {
         confirmClear();
+    }
+
+    /**
+     * 回收站底部“删除”按钮：彻底删除选中的项目。
+     */
+    @Override
+    protected void onDeleteClicked() {
+        final List<Multimedia> selected = getSelectedMedias();
+        if (selected.isEmpty()) {
+            toast(getString(R.string.can_not_choose_empty));
+            return;
+        }
+        new AlertDialog.Builder(
+                requireContext(), com.fde.imageeditlibrary.R.style.RoundedAlertDialog)
+                .setTitle(R.string.delete_forever)
+                .setMessage(getString(R.string.delete_forever_count_confirm, selected.size()))
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int count = 0;
+                        for (Multimedia media : selected) {
+                            TrashItem item = findItem(media);
+                            if (item != null && TrashManager.deleteForever(requireContext(), item)) {
+                                count++;
+                            }
+                        }
+                        toast(getString(R.string.deleted_forever_count, count));
+                        // 重新从存储读取，保证 items 与 mediaList 一一对应
+                        reload();
+                        clearAllSelection();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private TrashItem findItem(Multimedia media) {
+        if (media == null) {
+            return null;
+        }
+        for (TrashItem item : items) {
+            if (item.trashPath != null && item.trashPath.equals(media.getPath())) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override

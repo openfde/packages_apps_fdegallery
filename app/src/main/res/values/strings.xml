@@ -32,6 +32,7 @@
     <string name="favorite_added">Added to favorites</string>
     <string name="favorite_removed">Removed from favorites</string>
     <string name="favorite_added_count">Added %1$d item(s) to favorites</string>
+    <string name="favorite_removed_count">Removed %1$d item(s) from favorites</string>
     <string name="move_to_trash">Move to trash</string>
     <string name="is_move_to_trash">Move the selected item(s) to trash?</string>
     <string name="moved_to_trash_count">Moved %1$d item(s) to trash</string>
@@ -41,6 +42,8 @@
     <string name="restore_failed">Restore failed</string>
     <string name="delete_forever">Delete permanently</string>
     <string name="delete_forever_confirm">Delete this item permanently? This cannot be undone.</string>
+    <string name="delete_forever_count_confirm">Delete the %1$d selected item(s) permanently? This cannot be undone.</string>
+    <string name="deleted_forever_count">Permanently deleted %1$d item(s)</string>
     <string name="action_clear">Empty trash</string>
     <string name="clear_trash_confirm">Delete all items in trash permanently?</string>
     <string name="trash_count">%1$d item(s)</string>

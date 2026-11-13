@@ -3,6 +3,7 @@ package com.fde.gallery3d.ui.adapter;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +34,12 @@ import java.util.List;
 public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.MediaViewHolder> {
 
     public interface Listener {
+        /**
+         * 单击条目（带修饰键信息，用于选中 / 范围选择）。
+         */
+        void onMediaSingleTap(Multimedia media, int position,
+                              boolean ctrlPressed, boolean shiftPressed);
+
         void onMediaClick(Multimedia media, int position);
 
         void onMediaLongClick(View anchor, Multimedia media, int position);
@@ -90,7 +97,17 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
 
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
-                        // 单击不再打开预览，仅保留默认行为（无操作）
+                        // 单击触发选中（FDE 平台用 metaState + KeyEvent 掩码判断修饰键），
+                        // 是否真正进入选中态由页面（BaseMediaGridFragment）决定。
+                        if (listener != null) {
+                            int metaState = e.getMetaState();
+                            boolean ctrlPressed =
+                                    (metaState & KeyEvent.META_CTRL_MASK) != 0;
+                            boolean shiftPressed =
+                                    (metaState & KeyEvent.META_SHIFT_MASK) != 0;
+                            listener.onMediaSingleTap(media, holder.getBindingAdapterPosition(),
+                                    ctrlPressed, shiftPressed);
+                        }
                         return true;
                     }
 
@@ -104,14 +121,14 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
 
                     @Override
                     public void onLongPress(MotionEvent e) {
-                        if (listener != null) {
-                            listener.onMediaLongClick(holder.rootView, media,
-                                    holder.getBindingAdapterPosition());
-                        }
+                        // if (listener != null) {
+                        //     listener.onMediaLongClick(holder.rootView, media,
+                        //             holder.getBindingAdapterPosition());
+                        // }
                     }
                 });
 
-        // 双击打开预览/播放；长按弹出菜单。
+        // 单击选中、双击打开预览/播放；长按弹出菜单。
         // 不用 setOnClickListener，否则单击也会触发（onSingleTapConfirmed 走不到）。
         holder.rootView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }

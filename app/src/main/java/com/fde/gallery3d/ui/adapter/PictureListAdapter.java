@@ -125,12 +125,12 @@ public class PictureListAdapter extends RecyclerView.Adapter<PictureListAdapter.
 
         holder.selectBorder.setVisibility(picture.isSelected() ? View.VISIBLE : View.GONE);
 
-        holder.rootView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                return false;
-            }
-        });
+        // holder.rootView.setOnLongClickListener(new View.OnLongClickListener() {
+        //     @Override
+        //     public boolean onLongClick(View view) {
+        //         return false;
+        //     }
+        // });
     }
 
     @Override

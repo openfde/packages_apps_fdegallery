@@ -1,6 +1,10 @@
 package com.fde.gallery3d.ui.base;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -23,11 +28,14 @@ import com.fde.gallery3d.ui.VideoPlayActivity;
 import com.fde.gallery3d.ui.adapter.MediaGridAdapter;
 import com.fde.gallery3d.ui.bean.Multimedia;
 import com.fde.gallery3d.ui.common.Constant;
+import com.fde.gallery3d.ui.favorite.FavoriteStore;
 import com.fde.gallery3d.ui.picture.PicturePreviewFragment;
+import com.fde.gallery3d.ui.trash.TrashManager;
 import com.fde.gallery3d.ui.utils.DeviceUtils;
 import com.fde.gallery3d.ui.view.CustomScrollBarView;
 import com.fde.gallery3d.ui.view.RecyclerScrollBinder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,9 +43,33 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 搜索 / 收藏 / 回收站页面的公共基类：负责九宫格、空状态和布局自适应。
+ * 搜索 / 收藏 / 回收站 / 智能图册分类页面的公共基类：负责九宫格、空状态和布局自适应。
+ * <p>
+ * 各页面可通过 {@link #selectionEnabled} 与 {@link #gridMode} 开启“单击选中 + 底部操作栏”：
+ * <ul>
+ *     <li>NORMAL（智能图册等）：分享 / 收藏 / 移入回收站 / 全选 / 取消</li>
+ *     <li>FAVORITE（收藏）：分享 / 取消收藏 / 移入回收站 / 全选 / 取消</li>
+ *     <li>TRASH（回收站）：全选 / 彻底删除 / 取消</li>
+ * </ul>
  */
-public abstract class BaseMediaGridFragment extends Fragment implements MediaGridAdapter.Listener {
+public abstract class BaseMediaGridFragment extends Fragment
+        implements MediaGridAdapter.Listener, View.OnClickListener {
+
+    /** 底部操作栏按钮配置。 */
+    public enum GridMode {
+        /** 智能图册等普通列表：分享 / 收藏 / 移入回收站 / 全选 / 取消 */
+        NORMAL,
+        /** 收藏列表：分享 / 取消收藏 / 移入回收站 / 全选 / 取消 */
+        FAVORITE,
+        /** 回收站列表：全选 / 彻底删除 / 取消 */
+        TRASH
+    }
+
+    /** 是否启用“单击条目即选中”（默认关闭，如搜索页保持双击预览）。 */
+    protected boolean selectionEnabled = false;
+
+    /** 底部操作栏按钮模式。 */
+    protected GridMode gridMode = GridMode.NORMAL;
 
     protected RecyclerView recyclerView;
     protected LinearLayout headerBar;
@@ -51,6 +83,19 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
     protected TextView txtEmpty;
     private GridLayoutManager layoutManager;
     private View.OnLayoutChangeListener layoutChangeListener;
+
+    // 底部操作栏
+    private View layoutBottomBtn;
+    private TextView txtShare;
+    private TextView txtDelete;
+    private TextView txtAllSelected;
+    private TextView txtCancel;
+    private TextView txtCollect;
+    private boolean isShowBottomBtn;
+
+    /** Shift 范围选择的锚点（最后一次普通 / Ctrl 单击的位置，越界时取当前选中项）。 */
+    private int anchorPos = -1;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -79,6 +124,9 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
                 onHeaderAction();
             }
         });
+
+        initBottomBar(view);
+        configureBottomBar();
 
         onGridCreated(view);
         listenWindowResize();
@@ -216,6 +264,12 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
         txtHeaderInfo = null;
         btnHeaderAction = null;
         layoutManager = null;
+        layoutBottomBtn = null;
+        txtShare = null;
+        txtCollect = null;
+        txtDelete = null;
+        txtAllSelected = null;
+        txtCancel = null;
     }
 
     private void listenWindowResize() {
@@ -287,11 +341,6 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
             // 覆盖层方式打开预览，返回时列表不会被重建，滚动位置和缩略图得以保留
             PicturePreviewFragment.open(this, media);
         }
-
-
-
-
-
     }
 
     protected void toast(String text) {
@@ -312,4 +361,366 @@ public abstract class BaseMediaGridFragment extends Fragment implements MediaGri
     protected abstract void loadMedia(List<Multimedia> out);
 
     protected abstract String getEmptyText();
+
+    // ---------------------------------------------------------------------
+    // 选中 + 底部操作栏
+    // ---------------------------------------------------------------------
+
+    private void initBottomBar(View root) {
+        layoutBottomBtn = root.findViewById(R.id.layoutBottom);
+        txtShare = root.findViewById(R.id.txtShare);
+        txtCollect = root.findViewById(R.id.txtCollect);
+        txtDelete = root.findViewById(R.id.txtDelete);
+        txtAllSelected = root.findViewById(R.id.txtAllSelected);
+        txtCancel = root.findViewById(R.id.txtCancel);
+        if (txtShare != null) {
+            txtShare.setOnClickListener(this);
+        }
+        if (txtCollect != null) {
+            txtCollect.setOnClickListener(this);
+        }
+        if (txtDelete != null) {
+            txtDelete.setOnClickListener(this);
+        }
+        if (txtAllSelected != null) {
+            txtAllSelected.setOnClickListener(this);
+        }
+        if (txtCancel != null) {
+            txtCancel.setOnClickListener(this);
+        }
+    }
+
+    /**
+     * 按页面模式决定底部栏显示哪些按钮（回收站隐藏分享 / 收藏）。
+     */
+    private void configureBottomBar() {
+        if (txtShare == null || txtCollect == null) {
+            return;
+        }
+        boolean isTrash = gridMode == GridMode.TRASH;
+        txtShare.setVisibility(isTrash ? View.GONE : View.VISIBLE);
+        txtCollect.setVisibility(isTrash ? View.GONE : View.VISIBLE);
+        if (gridMode == GridMode.FAVORITE) {
+            // 收藏页只提供“取消收藏”
+            txtCollect.setText(R.string.unfavorite);
+            setCollectIcon(true);
+        } else {
+            txtCollect.setText(R.string.favorite);
+            setCollectIcon(false);
+        }
+    }
+
+    /**
+     * 单击条目：与图片列表一致，普通单击选中当前项、Ctrl 单击取反、Shift 范围选择。
+     */
+    @Override
+    public void onMediaSingleTap(Multimedia media, int position,
+                                 boolean ctrlPressed, boolean shiftPressed) {
+        if (!selectionEnabled || mediaList == null
+                || position < 0 || position >= mediaList.size() || adapter == null) {
+            return;
+        }
+        if (ctrlPressed) {
+            // Ctrl 单击：只取反当前项，不影响其它已选项
+            Multimedia picture = mediaList.get(position);
+            picture.setSelected(!picture.isSelected());
+            adapter.notifyItemChanged(position);
+        } else if (shiftPressed) {
+            // Shift 单击：选中上次锚点到当前位置之间的所有项（范围选择）
+            int anchor = (anchorPos >= 0 && anchorPos < mediaList.size()) ? anchorPos : position;
+            int start = Math.min(anchor, position);
+            int end = Math.max(anchor, position);
+            boolean changed = false;
+            for (int i = start; i <= end; i++) {
+                if (!mediaList.get(i).isSelected()) {
+                    mediaList.get(i).setSelected(true);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                adapter.notifyItemRangeChanged(start, end - start + 1);
+            }
+        } else {
+            // 普通单击：取消其它所有选择，只选中当前项
+            boolean changed = false;
+            for (int i = 0; i < mediaList.size(); i++) {
+                boolean shouldSelect = (i == position);
+                if (mediaList.get(i).isSelected() != shouldSelect) {
+                    mediaList.get(i).setSelected(shouldSelect);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                adapter.notifyDataSetChanged();
+            }
+        }
+        // 普通单击与 Ctrl 单击会重置 Shift 锚点，Shift 选择不移动锚点
+        if (!shiftPressed) {
+            anchorPos = position;
+        }
+        updateBottomBarBySelection();
+    }
+
+    protected List<Multimedia> getSelectedMedias() {
+        List<Multimedia> selected = new ArrayList<>();
+        if (mediaList == null) {
+            return selected;
+        }
+        for (Multimedia media : mediaList) {
+            if (media.isSelected()) {
+                selected.add(media);
+            }
+        }
+        return selected;
+    }
+
+    private void updateBottomBarBySelection() {
+        boolean anySelected = false;
+        boolean allSelected = !mediaList.isEmpty();
+        for (Multimedia media : mediaList) {
+            if (media.isSelected()) {
+                anySelected = true;
+            } else {
+                allSelected = false;
+            }
+        }
+        if (anySelected != isShowBottomBtn) {
+            showOrHideBottomBtn(anySelected);
+        }
+        if (layoutBottomBtn != null && layoutBottomBtn.getVisibility() == View.VISIBLE) {
+            updateAllSelectedButton(allSelected);
+            updateCollectButtonState();
+        }
+    }
+
+    private void showOrHideBottomBtn(boolean show) {
+        isShowBottomBtn = show;
+        if (layoutBottomBtn != null) {
+            layoutBottomBtn.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private boolean areAllSelected() {
+        if (mediaList.isEmpty()) {
+            return false;
+        }
+        for (Multimedia media : mediaList) {
+            if (!media.isSelected()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 全选 / 全不选按钮的文案与图标
+     */
+    private void updateAllSelectedButton(boolean allSelected) {
+        if (txtAllSelected == null) {
+            return;
+        }
+        txtAllSelected.setText(getString(allSelected ? R.string.deselect_all : R.string.select_all));
+        Drawable drawableTop = requireContext().getDrawable(
+                allSelected ? R.drawable.ic_main_not_selected : R.drawable.ic_main_all_selected);
+        drawableTop.setBounds(0, 0,
+                drawableTop.getIntrinsicWidth(), drawableTop.getIntrinsicHeight());
+        txtAllSelected.setCompoundDrawables(null, drawableTop, null, null);
+    }
+
+    /**
+     * 收藏按钮状态：NORMAL 下已全部收藏时显示实心图标；收藏页固定为实心（取消收藏）。
+     */
+    private void updateCollectButtonState() {
+        if (txtCollect == null) {
+            return;
+        }
+        if (gridMode == GridMode.TRASH) {
+            return;
+        }
+        if (gridMode == GridMode.FAVORITE) {
+            setCollectIcon(true);
+            return;
+        }
+        boolean hasSelected = false;
+        boolean allFavorite = true;
+        for (Multimedia media : mediaList) {
+            if (media.isSelected()) {
+                hasSelected = true;
+                if (!FavoriteStore.isFavorite(requireContext(), media.getPath())) {
+                    allFavorite = false;
+                    break;
+                }
+            }
+        }
+        setCollectIcon(hasSelected && allFavorite);
+    }
+
+    private void setCollectIcon(boolean filled) {
+        if (txtCollect == null) {
+            return;
+        }
+        Drawable drawableTop = requireContext().getDrawable(
+                filled ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        drawableTop.setBounds(0, 0,
+                drawableTop.getIntrinsicWidth(), drawableTop.getIntrinsicHeight());
+        txtCollect.setCompoundDrawables(null, drawableTop, null, null);
+    }
+
+    /**
+     * 移除列表中的已删除项，并收起底部操作栏。
+     */
+    protected void removeSelectedMedias(List<Multimedia> removed) {
+        if (removed != null && !removed.isEmpty()) {
+            removeMediaItems(removed);
+        }
+        clearAllSelection();
+    }
+
+    protected void clearAllSelection() {
+        if (!mediaList.isEmpty()) {
+            for (Multimedia media : mediaList) {
+                media.setSelected(false);
+            }
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+        isShowBottomBtn = false;
+        if (layoutBottomBtn != null) {
+            layoutBottomBtn.setVisibility(View.GONE);
+        }
+        updateAllSelectedButton(false);
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.txtShare) {
+            onShareClicked();
+        } else if (id == R.id.txtCollect) {
+            onCollectClicked();
+        } else if (id == R.id.txtDelete) {
+            onDeleteClicked();
+        } else if (id == R.id.txtAllSelected) {
+            onSelectAllClicked();
+        } else if (id == R.id.txtCancel) {
+            clearAllSelection();
+        }
+    }
+
+    protected void onShareClicked() {
+        try {
+            ArrayList<Uri> imageUris = new ArrayList<>();
+            for (Multimedia media : mediaList) {
+                if (media.isSelected()) {
+                    imageUris.add(FileProvider.getUriForFile(
+                            requireContext(),
+                            Constant.getProviderAuthority(requireContext()),
+                            new File(media.getPath())));
+                }
+            }
+            int size = imageUris.size();
+            if (size < 1) {
+                toast(getString(R.string.can_not_choose_empty));
+                return;
+            } else if (size > 9) {
+                toast(getString(R.string.can_not_choose_too_more));
+                return;
+            }
+            Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.setType("image/*");
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+            startActivity(Intent.createChooser(intent, getString(R.string.share)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 收藏按钮：NORMAL 收藏选中项；FAVORITE 取消收藏选中项。
+     */
+    protected void onCollectClicked() {
+        List<Multimedia> selected = getSelectedMedias();
+        if (selected.isEmpty()) {
+            toast(getString(R.string.can_not_choose_empty));
+            return;
+        }
+        if (gridMode == GridMode.FAVORITE) {
+            int count = 0;
+            for (Multimedia media : selected) {
+                if (FavoriteStore.remove(requireContext(), media.getPath())) {
+                    count++;
+                }
+            }
+            toast(getString(R.string.favorite_removed_count, count));
+            removeSelectedMedias(selected);
+        } else {
+            int count = 0;
+            for (Multimedia media : selected) {
+                if (FavoriteStore.add(requireContext(), media)) {
+                    count++;
+                }
+            }
+            toast(getString(R.string.favorite_added_count, count));
+            updateCollectButtonState();
+        }
+    }
+
+    /**
+     * 删除按钮：NORMAL / FAVORITE 移入回收站；TRASH 子类覆盖为彻底删除。
+     */
+    protected void onDeleteClicked() {
+        final List<Multimedia> selected = getSelectedMedias();
+        if (selected.isEmpty()) {
+            toast(getString(R.string.can_not_choose_empty));
+            return;
+        }
+        new AlertDialog.Builder(requireContext(),
+                com.fde.imageeditlibrary.R.style.RoundedAlertDialog)
+                .setTitle(R.string.is_move_to_trash)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        performMoveToTrash(selected);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void performMoveToTrash(List<Multimedia> selected) {
+        List<Multimedia> removed = new ArrayList<>();
+        int count = 0;
+        int failed = 0;
+        for (Multimedia media : selected) {
+            try {
+                if (TrashManager.moveToTrash(requireContext(), media)) {
+                    count++;
+                    removed.add(media);
+                } else {
+                    failed++;
+                }
+            } catch (SecurityException e) {
+                // 无删除权限（如 MANAGE_EXTERNAL_STORAGE 未授权）：不崩溃，提示失败
+                failed++;
+            }
+        }
+        toast(getString(failed == 0
+                ? R.string.moved_to_trash_count : R.string.move_to_trash_failed, count));
+        removeSelectedMedias(removed);
+    }
+
+    /**
+     * 全选按钮：切到全选 / 取消全选。
+     */
+    private void onSelectAllClicked() {
+        boolean target = !areAllSelected();
+        for (Multimedia media : mediaList) {
+            media.setSelected(target);
+        }
+        adapter.notifyDataSetChanged();
+        updateBottomBarBySelection();
+    }
 }

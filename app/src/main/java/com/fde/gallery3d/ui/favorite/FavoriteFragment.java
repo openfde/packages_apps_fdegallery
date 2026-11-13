@@ -5,6 +5,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
+import androidx.annotation.Nullable;
+
 import com.fde.gallery3d.R;
 import com.fde.gallery3d.ui.base.BaseMediaGridFragment;
 import com.fde.gallery3d.ui.bean.Multimedia;
@@ -13,6 +15,7 @@ import com.fde.gallery3d.ui.trash.TrashManager;
 
 import java.util.Collections;
 import java.util.List;
+import android.os.Bundle;
 
 /**
  * 收藏页面。
@@ -20,6 +23,14 @@ import java.util.List;
 public class FavoriteFragment extends BaseMediaGridFragment {
 
     public FavoriteFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 单击选中 + 底部操作栏；收藏页没有“收藏”按钮，只提供“取消收藏”
+        selectionEnabled = true;
+        gridMode = GridMode.FAVORITE;
     }
 
     @Override

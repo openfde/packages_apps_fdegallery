@@ -124,6 +124,11 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
                         context.startActivity(intent);
                         return true;
                     }
+
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+
+                    }
                 });
 
         holder.rootView.setOnTouchListener((v, event) -> {
