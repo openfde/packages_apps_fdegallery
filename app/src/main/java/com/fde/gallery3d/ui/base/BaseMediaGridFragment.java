@@ -49,7 +49,7 @@ import java.util.Set;
  * <ul>
  *     <li>NORMAL（智能图册等）：分享 / 收藏 / 移入回收站 / 全选 / 取消</li>
  *     <li>FAVORITE（收藏）：分享 / 取消收藏 / 移入回收站 / 全选 / 取消</li>
- *     <li>TRASH（回收站）：全选 / 彻底删除 / 取消</li>
+ *     <li>TRASH（回收站）：全选 / 还原 / 彻底删除 / 取消</li>
  * </ul>
  */
 public abstract class BaseMediaGridFragment extends Fragment
@@ -61,7 +61,7 @@ public abstract class BaseMediaGridFragment extends Fragment
         NORMAL,
         /** 收藏列表：分享 / 取消收藏 / 移入回收站 / 全选 / 取消 */
         FAVORITE,
-        /** 回收站列表：全选 / 彻底删除 / 取消 */
+        /** 回收站列表：全选 / 还原 / 彻底删除 / 取消 */
         TRASH
     }
 
@@ -86,8 +86,12 @@ public abstract class BaseMediaGridFragment extends Fragment
 
     // 底部操作栏
     private View layoutBottomBtn;
+    private LinearLayout llShareButton;
+    private LinearLayout llCollectButton;
+    private LinearLayout llRestoreButton;
     private TextView txtShare;
     private TextView txtDelete;
+    private TextView txtRestore;
     private TextView txtAllSelected;
     private TextView txtCancel;
     private TextView txtCollect;
@@ -265,9 +269,13 @@ public abstract class BaseMediaGridFragment extends Fragment
         btnHeaderAction = null;
         layoutManager = null;
         layoutBottomBtn = null;
+        llShareButton = null;
+        llCollectButton = null;
+        llRestoreButton = null;
         txtShare = null;
         txtCollect = null;
         txtDelete = null;
+        txtRestore = null;
         txtAllSelected = null;
         txtCancel = null;
     }
@@ -368,9 +376,13 @@ public abstract class BaseMediaGridFragment extends Fragment
 
     private void initBottomBar(View root) {
         layoutBottomBtn = root.findViewById(R.id.layoutBottom);
+        llShareButton = root.findViewById(R.id.llShareButton);
+        llCollectButton = root.findViewById(R.id.llCollectButton);
+        llRestoreButton = root.findViewById(R.id.llRestoreButton);
         txtShare = root.findViewById(R.id.txtShare);
         txtCollect = root.findViewById(R.id.txtCollect);
         txtDelete = root.findViewById(R.id.txtDelete);
+        txtRestore = root.findViewById(R.id.txtRestore);
         txtAllSelected = root.findViewById(R.id.txtAllSelected);
         txtCancel = root.findViewById(R.id.txtCancel);
         if (txtShare != null) {
@@ -382,6 +394,9 @@ public abstract class BaseMediaGridFragment extends Fragment
         if (txtDelete != null) {
             txtDelete.setOnClickListener(this);
         }
+        if (txtRestore != null) {
+            txtRestore.setOnClickListener(this);
+        }
         if (txtAllSelected != null) {
             txtAllSelected.setOnClickListener(this);
         }
@@ -391,15 +406,28 @@ public abstract class BaseMediaGridFragment extends Fragment
     }
 
     /**
-     * 按页面模式决定底部栏显示哪些按钮（回收站隐藏分享 / 收藏）。
+     * 按页面模式决定底部栏显示哪些按钮（回收站隐藏分享 / 收藏，显示还原，删除改为彻底删除）。
      */
     private void configureBottomBar() {
         if (txtShare == null || txtCollect == null) {
             return;
         }
         boolean isTrash = gridMode == GridMode.TRASH;
-        txtShare.setVisibility(isTrash ? View.GONE : View.VISIBLE);
-        txtCollect.setVisibility(isTrash ? View.GONE : View.VISIBLE);
+        // 切换外层容器显隐（而非按钮自身），隐藏的格子不参与等分，
+        // 保证图片/视频页 5 个按钮、回收站 4 个按钮都能等间距、两边对齐。
+        if (llShareButton != null) {
+            llShareButton.setVisibility(isTrash ? View.GONE : View.VISIBLE);
+        }
+        if (llCollectButton != null) {
+            llCollectButton.setVisibility(isTrash ? View.GONE : View.VISIBLE);
+        }
+        if (llRestoreButton != null) {
+            llRestoreButton.setVisibility(isTrash ? View.VISIBLE : View.GONE);
+        }
+        // 回收站：删除按钮文案改为“彻底删除”
+        if (txtDelete != null) {
+            txtDelete.setText(getString(isTrash ? R.string.delete_forever : R.string.delete));
+        }
         if (gridMode == GridMode.FAVORITE) {
             // 收藏页只提供“取消收藏”
             txtCollect.setText(R.string.unfavorite);
@@ -475,6 +503,13 @@ public abstract class BaseMediaGridFragment extends Fragment
     }
 
     private void updateBottomBarBySelection() {
+        updateBottomBarBySelection(false);
+    }
+
+    /**
+     * @param keepWhenEmpty 为 true 时，取消全选后仍保持底部操作栏显示
+     */
+    private void updateBottomBarBySelection(boolean keepWhenEmpty) {
         boolean anySelected = false;
         boolean allSelected = !mediaList.isEmpty();
         for (Multimedia media : mediaList) {
@@ -484,8 +519,9 @@ public abstract class BaseMediaGridFragment extends Fragment
                 allSelected = false;
             }
         }
-        if (anySelected != isShowBottomBtn) {
-            showOrHideBottomBtn(anySelected);
+        boolean show = anySelected || (keepWhenEmpty && isShowBottomBtn);
+        if (show != isShowBottomBtn) {
+            showOrHideBottomBtn(show);
         }
         if (layoutBottomBtn != null && layoutBottomBtn.getVisibility() == View.VISIBLE) {
             updateAllSelectedButton(allSelected);
@@ -599,6 +635,8 @@ public abstract class BaseMediaGridFragment extends Fragment
             onShareClicked();
         } else if (id == R.id.txtCollect) {
             onCollectClicked();
+        } else if (id == R.id.txtRestore) {
+            onRestoreClicked();
         } else if (id == R.id.txtDelete) {
             onDeleteClicked();
         } else if (id == R.id.txtAllSelected) {
@@ -669,6 +707,12 @@ public abstract class BaseMediaGridFragment extends Fragment
     }
 
     /**
+     * 还原按钮：默认无操作，回收站子类覆盖为“从回收站恢复选中的项目”。
+     */
+    protected void onRestoreClicked() {
+    }
+
+    /**
      * 删除按钮：NORMAL / FAVORITE 移入回收站；TRASH 子类覆盖为彻底删除。
      */
     protected void onDeleteClicked() {
@@ -721,6 +765,7 @@ public abstract class BaseMediaGridFragment extends Fragment
             media.setSelected(target);
         }
         adapter.notifyDataSetChanged();
-        updateBottomBarBySelection();
+        // 取消全选（target=false）时保持底部操作栏显示
+        updateBottomBarBySelection(!target);
     }
 }

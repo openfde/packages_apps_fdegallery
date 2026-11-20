@@ -22,6 +22,7 @@
 
 
     <LinearLayout
+        android:id="@+id/llShareButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center|top"
@@ -38,6 +39,7 @@
 
 
     <LinearLayout
+        android:id="@+id/llCollectButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center|top"
@@ -52,6 +54,24 @@
             android:text="@string/favorite" />
     </LinearLayout>
 
+
+    <!-- 还原按钮：仅回收站页面显示（隐藏时整格不参与均分） -->
+    <LinearLayout
+        android:id="@+id/llRestoreButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center|top"
+        android:layout_weight="1"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtRestore"
+            style="@style/list_bottom_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_main_restore"
+            android:text="@string/restore" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="0dp"

@@ -1,5 +1,6 @@
 package com.fde.gallery3d.ui.favorite;
 
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +16,6 @@ import com.fde.gallery3d.ui.trash.TrashManager;
 
 import java.util.Collections;
 import java.util.List;
-import android.os.Bundle;
 
 /**
  * 收藏页面。

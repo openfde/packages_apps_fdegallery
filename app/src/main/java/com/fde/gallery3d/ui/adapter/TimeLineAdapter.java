@@ -106,6 +106,12 @@ public class TimeLineAdapter extends RecyclerView.Adapter<TimeLineAdapter.TimeLi
                         context.startActivity(intent);
                         return true;
                     }
+
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+                        // 长按不响应任何事件：与 MediaGridAdapter 一致，
+                        // 避免与“单击选中、双击预览”的交互冲突。
+                    }
                 });
 
         holder.rootView.setOnTouchListener((v, event) -> {

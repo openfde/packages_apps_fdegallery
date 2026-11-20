@@ -35,6 +35,7 @@
     <string name="restore">恢复</string>
     <string name="restore_success">已恢复</string>
     <string name="restore_failed">恢复失败</string>
+    <string name="restored_count">已恢复 %1$d 项</string>
     <string name="delete_forever">彻底删除</string>
     <string name="delete_forever_confirm">彻底删除该项目？此操作不可恢复。</string>
     <string name="delete_forever_count_confirm">确定彻底删除选中的 %1$d 项？此操作不可恢复。</string>

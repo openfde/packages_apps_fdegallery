@@ -67,7 +67,30 @@ public class TrashFragment extends BaseMediaGridFragment {
     }
 
     /**
-     * 回收站底部“删除”按钮：彻底删除选中的项目。
+     * 回收站底部“还原”按钮：将选中的项目恢复到原路径。
+     */
+    @Override
+    protected void onRestoreClicked() {
+        final List<Multimedia> selected = getSelectedMedias();
+        if (selected.isEmpty()) {
+            toast(getString(R.string.can_not_choose_empty));
+            return;
+        }
+        int count = 0;
+        for (Multimedia media : selected) {
+            TrashItem item = findItem(media);
+            if (item != null && TrashManager.restore(requireContext(), item)) {
+                count++;
+            }
+        }
+        toast(getString(R.string.restored_count, count));
+        // 重新从存储读取，保证 items 与 mediaList 一一对应
+        reload();
+        clearAllSelection();
+    }
+
+    /**
+     * 回收站底部“彻底删除”按钮：彻底删除选中的项目。
      */
     @Override
     protected void onDeleteClicked() {

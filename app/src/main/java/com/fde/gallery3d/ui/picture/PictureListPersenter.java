@@ -138,36 +138,9 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
         // pictureListAdapter == null 直接返回，首帧仍然停留在 3 列。
         listenWindowResize();
 
-        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            private long touchDownTime = 0;
-
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                    touchDownTime = System.currentTimeMillis();
-                } else if (e.getAction() == MotionEvent.ACTION_UP) {
-                    long duration = System.currentTimeMillis() - touchDownTime;
-                    if (duration >= ViewConfiguration.getLongPressTimeout()) {
-                        View childView = rv.findChildViewUnder(e.getX(), e.getY());
-                        if (childView != null) {
-                            int position = rv.getChildAdapterPosition(childView);
-                            onRightEvent(position, 0);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            }
-        });
-
+        // 长按不再弹出底部操作栏：与 MediaGridAdapter 一致（单击选中、双击预览）。
+        // 原 onItemTouchListener 会把“长按”识别为 onRightEvent() 切换底部操作栏，已移除。
+        // recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() { ... });
 
         return true;
     }
@@ -409,6 +382,13 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
     }
 
     private void updateBottomBarBySelection() {
+        updateBottomBarBySelection(false);
+    }
+
+    /**
+     * @param keepWhenEmpty 为 true 时，取消全选后仍保持底部操作栏显示
+     */
+    private void updateBottomBarBySelection(boolean keepWhenEmpty) {
         boolean anySelected = false;
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).isSelected()) {
@@ -416,8 +396,12 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
                 break;
             }
         }
-        if (anySelected != isShowBottomBtn) {
-            showOrHideBottomBtn(anySelected);
+        boolean show = anySelected || (keepWhenEmpty && isShowBottomBtn);
+        if (show != isShowBottomBtn) {
+            showOrHideBottomBtn(show);
+        }
+        if (layoutBottomBtn != null && layoutBottomBtn.getVisibility() == View.VISIBLE) {
+            updateCollectButtonState();
         }
     }
 
@@ -647,7 +631,7 @@ public class PictureListPersenter implements ViewEvent, View.OnClickListener {
                     null,
                     null);
 
-            updateBottomBarBySelection();
+            updateBottomBarBySelection(!isAllSelected);
             updateCollectButtonState();
 
         } else if (id == R.id.txtCancel) {

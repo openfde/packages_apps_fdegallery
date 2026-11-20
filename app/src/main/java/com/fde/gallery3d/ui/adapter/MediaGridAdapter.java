@@ -121,14 +121,12 @@ public class MediaGridAdapter extends RecyclerView.Adapter<MediaGridAdapter.Medi
 
                     @Override
                     public void onLongPress(MotionEvent e) {
-                        // if (listener != null) {
-                        //     listener.onMediaLongClick(holder.rootView, media,
-                        //             holder.getBindingAdapterPosition());
-                        // }
+                        // 长按不触发任何逻辑：与图片列表 / 视频列表一致，
+                        // 避免长按与“单击选中、双击预览”的交互冲突。
                     }
                 });
 
-        // 单击选中、双击打开预览/播放；长按弹出菜单。
+        // 单击选中、双击打开预览/播放；长按不触发任何逻辑。
         // 不用 setOnClickListener，否则单击也会触发（onSingleTapConfirmed 走不到）。
         holder.rootView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }

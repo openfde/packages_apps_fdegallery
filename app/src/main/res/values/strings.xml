@@ -40,6 +40,7 @@
     <string name="restore">Restore</string>
     <string name="restore_success">Restored</string>
     <string name="restore_failed">Restore failed</string>
+    <string name="restored_count">Restored %1$d item(s)</string>
     <string name="delete_forever">Delete permanently</string>
     <string name="delete_forever_confirm">Delete this item permanently? This cannot be undone.</string>
     <string name="delete_forever_count_confirm">Delete the %1$d selected item(s) permanently? This cannot be undone.</string>
