@@ -46,6 +46,9 @@ import com.fde.gallery3d.ui.view.SmartAlbumMenuView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import androidx.activity.SystemBarStyle
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 
 
 class MainActivity : AppCompatActivity() {
@@ -186,8 +189,22 @@ class MainActivity : AppCompatActivity() {
 
         setupSideSearch(navController)
         setupToolbarTitle(navController)
+        
+        setupBackPressedHandler(navController)
     }
 
+    private fun setupBackPressedHandler(navController: NavController) {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!navController.popBackStack()) {
+                    // 已回到导航栈根（起始目的地），无法再返回，此时退出应用
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    finish()
+                }
+            }
+        })
+    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)

@@ -83,4 +83,11 @@
 
     </FrameLayout>
 
+    <!-- 选中条目时的底部操作栏，样式与图片列表一致（默认隐藏） -->
+    <include
+        android:id="@+id/layoutBottom"
+        layout="@layout/layout_bottom_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

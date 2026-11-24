@@ -50,6 +50,9 @@ public class CategoryFragment extends BaseMediaGridFragment implements AiMediaCl
         if (getArguments() != null) {
             category = AiCategory.fromId(getArguments().getString(ARG_CATEGORY));
         }
+        // 与图片列表一致：单击选中 + 底部操作栏（分享 / 收藏 / 删除 / 全选 / 取消）
+        selectionEnabled = true;
+        gridMode = GridMode.NORMAL;
     }
 
     @Override
